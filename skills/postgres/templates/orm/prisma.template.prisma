@@ -1,0 +1,66 @@
+// ============================================
+// Prisma Configuration for DO Managed Postgres
+// ============================================
+// 
+// Replace {APP_NAME} with your app/schema name
+//
+// Setup:
+//   nvm use 20
+//   npm install prisma @prisma/client
+//   npx prisma generate
+//   npx prisma db push  # or: npx prisma migrate dev
+
+// prisma/schema.prisma
+// --------------------
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["{APP_NAME}"]
+}
+
+// Example models - customize for your app
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("{APP_NAME}")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("{APP_NAME}")
+}
+
+
+// .env
+// ----
+// DATABASE_URL="postgresql://{APP_NAME}_user:PASSWORD@HOST:25060/defaultdb?sslmode=require&schema={APP_NAME}"
+
+
+// Usage in code
+// -------------
+// import { PrismaClient } from '@prisma/client'
+// const prisma = new PrismaClient()
+// 
+// async function main() {
+//   const users = await prisma.user.findMany()
+//   console.log(users)
+// }

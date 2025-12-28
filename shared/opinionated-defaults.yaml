@@ -1,0 +1,181 @@
+# Opinionated Defaults for DigitalOcean App Platform
+# Single source of truth for all skills
+#
+# These defaults represent best practices and sensible starting points.
+# Skills should use these unless the user specifies otherwise.
+
+# Instance sizing defaults (reference: instance-sizes.yaml)
+instance:
+  service: apps-s-1vcpu-1gb      # Good starting point, scalable
+  worker: apps-s-1vcpu-0.5gb     # Workers can be smaller
+  job: apps-s-1vcpu-0.5gb        # Jobs are short-lived
+  static_site: null              # Static sites don't have instance sizes
+
+# Instance counts
+instance_count:
+  service: 1                     # Start minimal, scale based on load
+  worker: 1
+  job: 1                         # Jobs typically run single instance
+
+# Region defaults (reference: regions.yaml)
+region:
+  default: nyc                   # Good default for US-based apps
+  rationale: "NYC has lowest latency for US East, good global connectivity"
+
+# Database defaults
+database:
+  engine: PG                     # PostgreSQL is the most versatile
+  version: "16"                  # Latest stable version
+  use_dev_db_for: [test, development]  # Dev DB is cheaper for non-prod
+  use_managed_for: [staging, production]
+  ssl_mode: require              # Always require SSL
+
+# Cache defaults
+cache:
+  engine: VALKEY                 # Use Valkey, not Redis (Redis is EOL on DO)
+  rationale: "Redis is End of Life on DigitalOcean. Valkey is API-compatible."
+
+# Build defaults
+build:
+  prefer_dockerfile: true        # Dockerfile gives more control
+  fallback_to_buildpack: true    # If no Dockerfile, use buildpack
+  deploy_on_push: true           # GitOps workflow (but false in app spec when using GitHub Actions)
+
+# Health check defaults
+health_check:
+  path: /health                  # Industry standard
+  alternatives: [/healthz, /ready, /_health]
+  initial_delay_seconds: 10      # Give app time to start
+  period_seconds: 10             # Check every 10 seconds
+  timeout_seconds: 5             # Fail fast
+  success_threshold: 1           # One success = healthy
+  failure_threshold: 3           # Three failures = unhealthy
+
+# Runtime defaults
+runtime:
+  python:
+    package_manager: uv          # Fast, modern, handles virtualenvs automatically
+    version: "3.12"              # Latest stable
+    rationale: "uv is significantly faster than pip and handles environments better"
+
+  node:
+    version_manager: nvm         # Industry standard
+    version: "22"                # Latest LTS
+    package_manager: npm         # Default, but pnpm/yarn also supported
+
+  go:
+    version: "1.22"              # Latest stable
+
+  ruby:
+    version: "3.3"               # Latest stable
+
+  bun:
+    version: "1.0"               # Production ready
+
+# Environment variable naming conventions
+env_vars:
+  database:
+    primary: DATABASE_URL        # Standard name for primary database
+    read_replica: DATABASE_REPLICA_URL
+  cache:
+    primary: VALKEY_URL          # Preferred for new apps
+    redis_alias: REDIS_URL       # For backwards compatibility
+  storage:
+    bucket: SPACES_BUCKET
+    access_key: SPACES_ACCESS_KEY_ID
+    secret_key: SPACES_SECRET_ACCESS_KEY
+    endpoint: SPACES_ENDPOINT
+  ai:
+    api_key: GRADIENT_API_KEY
+  common:
+    secret_key: SECRET_KEY
+    jwt_secret: JWT_SECRET
+    api_key: API_KEY
+    port: PORT
+
+# Git source format
+git:
+  prefer_git_block: true         # Use `git:` block over `github:` for templates
+  rationale: "Required for deploy.template.yaml compatibility"
+  branch: main                   # Default branch
+
+# Deployment defaults
+deployment:
+  ci_platform: github_actions    # Best DO integration via app_action
+  action_version: v2             # digitalocean/app_action/deploy@v2
+  wait_for_deploy: true          # Confirm deployment succeeded
+  print_logs: false              # View logs in console/doctl instead
+
+# Environment naming
+environments:
+  names: [development, staging, production]
+  default_target: staging        # Safe default for manual deployments
+
+# DO Project conventions
+projects:
+  naming_pattern: "{app_name}-{environment}"
+  examples:
+    - myapp-development
+    - myapp-staging
+    - myapp-production
+
+# Credential handling (reference: credential-patterns.md)
+credentials:
+  preference_order:
+    - github_secrets             # Most secure, per-environment
+    - bindable_variables         # For DO managed services
+    - ephemeral                  # Generate, use, delete
+    - external                   # User manages externally
+
+  never:
+    - commit_to_git
+    - log_values
+    - hardcode_in_spec
+
+# Networking defaults
+networking:
+  prefer_internal_urls: true     # Use ${component.PRIVATE_URL} for inter-service
+  rationale: "Internal URLs avoid public internet, lower latency, more secure"
+
+# Autoscaling defaults (for production)
+autoscaling:
+  enabled_for: production
+  min_instances: 2               # Minimum for HA
+  max_instances: 5               # Sensible default cap
+  cpu_threshold: 80              # Scale up at 80% CPU
+
+# Job defaults
+jobs:
+  migration_kind: PRE_DEPLOY     # Run migrations before deployment
+  cleanup_kind: POST_DEPLOY      # Run cleanup after deployment
+  notification_kind: FAILED_DEPLOY  # Notify on failure
+
+# Buildpack slugs (environment_slug values)
+buildpacks:
+  nodejs: node-js
+  python: python
+  go: go
+  ruby: ruby
+  php: php
+  hugo: hugo
+  bun: bun
+
+# Port defaults by runtime
+ports:
+  nodejs: 8080
+  python: 8000
+  go: 8080
+  ruby: 3000
+  php: 8080
+  default: 8080
+
+# Documentation URLs (for reference in skills)
+documentation:
+  app_spec: https://docs.digitalocean.com/products/app-platform/reference/app-spec/
+  pricing: https://docs.digitalocean.com/products/app-platform/details/pricing/
+  regions: https://docs.digitalocean.com/products/app-platform/details/availability/
+  buildpacks: https://docs.digitalocean.com/products/app-platform/reference/buildpacks/
+  databases: https://docs.digitalocean.com/products/databases/
+  deploy_button: https://docs.digitalocean.com/products/app-platform/how-to/add-deploy-do-button/
+  app_action: https://github.com/digitalocean/app_action
+  doctl: https://docs.digitalocean.com/reference/doctl/reference/apps/
