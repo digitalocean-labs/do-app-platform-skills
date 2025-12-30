@@ -547,11 +547,13 @@ jobs:
 
 ---
 
-## Workflow 5: Debug Component for Complex Deployments
+## Workflow 5: Debug Container for Complex Deployments
 
 **User says**: "My app has 10 integrations and keeps failing. Can we test infrastructure first?"
 
-For complex applications with multiple database connections and third-party integrations, deploying a debug component first can save hours of iteration.
+For complex applications with multiple database connections and third-party integrations, deploying a debug container first can save hours of iteration.
+
+**Source**: [github.com/bikramkgupta/do-app-debug-container](https://github.com/bikramkgupta/do-app-debug-container)
 
 ### The Problem
 
@@ -559,13 +561,13 @@ For complex applications with multiple database connections and third-party inte
 Traditional approach for complex apps:
 Push code → Wait 5-7 min → Fails → Check logs → Guess → Repeat
 
-With debug component:
-Deploy debug worker (~45s) → Verify ALL connections → 
+With debug container:
+Deploy debug worker (~30-45s) → Run built-in diagnostics → Verify ALL connections →
 If works → Proceed with full app
 If fails → Fix infrastructure, not code
 ```
 
-### Debug Component Pattern
+### Deploy the Debug Container
 
 Add this worker to your app spec temporarily:
 
@@ -574,12 +576,12 @@ Add this worker to your app spec temporarily:
 workers:
   - name: debug
     image:
-      registry_type: DOCKER_HUB
-      registry: library
-      repository: alpine
+      registry_type: GHCR
+      registry: ghcr.io
+      repository: bikramkgupta/do-app-debug-container-python
+      # OR: bikramkgupta/do-app-debug-container-node
       tag: latest
-    run_command: sleep infinity
-    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_size_slug: apps-s-1vcpu-2gb
     envs:
       # Mirror ALL environment variables from your main service
       - key: DATABASE_URL
@@ -587,97 +589,75 @@ workers:
         value: ${db.DATABASE_URL}
       - key: REDIS_URL
         scope: RUN_TIME
-        value: ${redis.REDIS_URL}
+        value: ${cache.DATABASE_URL}
+      - key: MONGODB_URI
+        scope: RUN_TIME
+        value: ${mongo.DATABASE_URL}
       - key: KAFKA_BROKERS
         scope: RUN_TIME
-        value: ${kafka.KAFKA_BROKERS}
+        value: ${kafka.HOSTNAME}:${kafka.PORT}
       # Add any other integrations...
 ```
 
-### Pre-Built Debug Image (Recommended)
+The debug container includes **all diagnostic tools pre-installed**:
+- Database clients: `psql`, `mysql`, `mongosh`, `redis-cli`, `kcat`
+- Network tools: `curl`, `dig`, `nmap`, `tcpdump`, `netcat`
+- Diagnostic scripts: `diagnose.sh`, `test-db.sh`, `test-connectivity.sh`, `test-spaces.sh`
+- doctl: Pre-installed and auto-updated
 
-For frequent debugging, use a pre-built image with all client tools:
+### Verification Workflow
 
-```dockerfile
-# Dockerfile.debug - push to GHCR or DOCR
-FROM ubuntu:24.04
-
-RUN apt-get update && apt-get install -y \
-    # Database clients
-    postgresql-client \
-    mysql-client \
-    redis-tools \
-    # Network tools
-    curl \
-    wget \
-    netcat-openbsd \
-    dnsutils \
-    # Development
-    python3 \
-    python3-pip \
-    # AWS CLI for Spaces
-    awscli \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python packages for testing
-RUN pip3 install --break-system-packages \
-    psycopg2-binary \
-    pymysql \
-    redis \
-    kafka-python \
-    opensearch-py \
-    boto3
-
-CMD ["sleep", "infinity"]
-```
-
-### Verification Checklist
-
-After deploying debug component, connect and verify:
+After deploying, connect and run built-in diagnostics:
 
 ```bash
 # Connect to debug container
 doctl apps console $APP_ID debug
 
-# Inside container:
+# Run comprehensive diagnostics
+./diagnose.sh
 
-# 1. Verify all environment variables populated
-env | grep -E 'DATABASE|REDIS|KAFKA|URL' | sort
+# Test specific database types
+./test-db.sh postgres
+./test-db.sh redis
+./test-db.sh mongo
+./test-db.sh kafka
 
-# 2. Test database connectivity
-psql "$DATABASE_URL" -c "SELECT 1;"
+# Test network connectivity
+./test-connectivity.sh
 
-# 3. Test Redis connectivity
-redis-cli -u "$REDIS_URL" PING
-
-# 4. Test network to third-party services
-curl -I https://api.third-party.com/health
-
-# 5. Test Spaces/S3 connectivity
-aws s3 ls s3://$SPACES_BUCKET --endpoint=$SPACES_ENDPOINT
+# Test Spaces/S3 access
+./test-spaces.sh
 ```
 
-### Cleanup
+### Lifecycle Management
 
-**IMPORTANT**: Delete the debug component after verification.
+**While debugging**: Keep the debug worker running.
 
-```bash
-# Remove debug worker from spec
-# Or delete via: doctl apps update $APP_ID --spec (without debug worker)
+**When pausing**: Archive the app to stop compute costs while preserving configuration:
+
+```yaml
+name: my-app
+maintenance:
+  archive: true
 ```
+
+**When done**: Remove the debug worker from your app spec and redeploy, or delete standalone debug apps entirely.
 
 ### When to Use This Pattern
 
-✅ **Use debug component when:**
+✅ **Use debug container when:**
 - App has 3+ external integrations
 - Deployment keeps failing with connection errors
 - Setting up new managed databases for the first time
 - Migrating from one database cluster to another
+- Verifying VPC + trusted sources configuration
 
 ❌ **Skip this when:**
 - Simple app with 1-2 services
 - Issue is clearly application code (syntax errors, etc.)
 - Already verified infrastructure works
+
+→ For detailed debugging workflows, see the **troubleshooting skill**.
 
 ---
 

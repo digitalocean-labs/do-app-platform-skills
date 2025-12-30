@@ -45,7 +45,7 @@ This skill routes DigitalOcean App Platform tasks to specialized sub-skills. Eac
 | Skill | Purpose | Key Artifacts |
 |-------|---------|---------------|
 | **deployment** | Ship code to production via GitHub Actions | `.github/workflows/deploy.yml` |
-| **troubleshooting** | Debug running apps, access containers, analyze logs | Fixes, diagnostic reports |
+| **troubleshooting** | Debug running apps with pre-built debug container, analyze logs | Fixes, diagnostic reports |
 
 ### Data Services
 

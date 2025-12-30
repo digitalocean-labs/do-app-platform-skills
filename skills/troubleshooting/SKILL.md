@@ -250,7 +250,7 @@ app.exec("chmod +x /tmp/diagnostic.sh && /tmp/diagnostic.sh")
 
 ### Database Connectivity Testing
 
-> **TIP**: If you're unsure whether the issue is infrastructure or application code, consider the **Alpine Debug Pattern** (see below) first. It deploys in ~45 seconds and isolates the problem definitively.
+> **TIP**: If you're unsure whether the issue is infrastructure or application code, consider the **Debug Container** (see below) first. It deploys in ~30-45 seconds with all diagnostic tools pre-installed and isolates the problem definitively.
 
 ```python
 # Check if DATABASE_URL is set
@@ -692,66 +692,67 @@ print(result.stdout)
 
 ---
 
-## Alpine Debug Pattern: Isolate Infrastructure Issues
+## Debug Container: Isolate Infrastructure Issues
 
-**Key Insight**: When troubleshooting database/network issues, you're debugging multiple layers at once. The Alpine debug pattern isolates infrastructure from application in ~45 seconds instead of 5-7 minutes.
+**Source**: [github.com/bikramkgupta/do-app-debug-container](https://github.com/bikramkgupta/do-app-debug-container)
 
-### Why This Pattern
+**Key Insight**: When troubleshooting database/network issues, you're debugging multiple layers at once. The debug container isolates infrastructure from application in ~30-45 seconds, with **all diagnostic tools pre-installed**.
 
-| Aspect | Alpine Debug Worker | Full App Redeploy |
-|--------|---------------------|-------------------|
-| Deploy time | ~45 seconds | 5-7 minutes |
-| Image size | ~5MB | Your app size |
-| Complexity | Zero application code | All your code |
+### Why Use the Debug Container
+
+| Aspect | Debug Container | Full App Redeploy |
+|--------|-----------------|-------------------|
+| Deploy time | ~30-45 seconds | 5-7 minutes |
+| Database clients | Pre-installed (psql, mysql, mongosh, redis-cli, kcat) | None |
+| Network tools | Pre-installed (curl, dig, nmap, tcpdump, netcat) | None |
+| Diagnostic scripts | Built-in (`diagnose.sh`, `test-db.sh`, `test-connectivity.sh`) | None |
+| doctl | Pre-installed + auto-updated | None |
 | Purpose | Pure infrastructure validation | Everything |
+
+**Available Images**:
+- `ghcr.io/bikramkgupta/do-app-debug-container-python` — Python 3.x runtime
+- `ghcr.io/bikramkgupta/do-app-debug-container-node` — Node.js 20.x runtime
+
+Both images include identical diagnostic tooling. Choose based on your application's runtime.
 
 **Decision Logic**:
 ```
-Database Connection Issue?
+Database/Network Connection Issue?
 │
-├─ Step 1: Deploy Alpine debug worker (~45s)
-├─ Step 2: Verify env vars populated
-├─ Step 3: Test actual connection
+├─ Step 1: Deploy debug container (~30-45s)
+├─ Step 2: Container shows startup banner with detected connections
+├─ Step 3: Run built-in diagnostic scripts
 │
-├─ If Alpine works → Issue is in APPLICATION code
-└─ If Alpine fails → Issue is INFRASTRUCTURE (credentials, network, trusted sources)
+├─ If debug container works → Issue is in APPLICATION code
+└─ If debug container fails → Issue is INFRASTRUCTURE (credentials, network, trusted sources)
 ```
 
 ### Step 1: Add Debug Worker to App Spec
 
-Add this worker component to your existing app spec:
+**For existing apps** — add this worker component to your app spec:
 
 ```yaml
 workers:
   - name: debug
     image:
-      registry_type: DOCKER_HUB
-      registry: library
-      repository: alpine
+      registry_type: GHCR
+      registry: ghcr.io
+      repository: bikramkgupta/do-app-debug-container-python
       tag: latest
-    run_command: sleep infinity
-    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_size_slug: apps-s-1vcpu-2gb
     envs:
-      # Mirror whatever database bindings your app uses
+      # Mirror environment variables from your services
       # IMPORTANT: "your-db-name" must match the "name" in your databases section
       - key: DATABASE_URL
         scope: RUN_TIME
         value: ${your-db-name.DATABASE_URL}
-      - key: DB_HOST
-        scope: RUN_TIME
-        value: ${your-db-name.HOSTNAME}
-      - key: DB_PORT
-        scope: RUN_TIME
-        value: ${your-db-name.PORT}
-      - key: DB_USER
-        scope: RUN_TIME
-        value: ${your-db-name.USERNAME}
-      - key: DB_PASSWORD
-        scope: RUN_TIME
-        value: ${your-db-name.PASSWORD}
-      - key: DB_NAME
-        scope: RUN_TIME
-        value: ${your-db-name.DATABASE}
+      # Add other database connections as needed:
+      # - key: REDIS_URL
+      #   scope: RUN_TIME
+      #   value: ${cache.DATABASE_URL}
+      # - key: MONGODB_URI
+      #   scope: RUN_TIME
+      #   value: ${mongo.DATABASE_URL}
 
 databases:
   - name: your-db-name   # ← This name is what you reference in ${your-db-name.XXXX}
@@ -762,17 +763,19 @@ databases:
     db_user: your-user
 ```
 
+**Environment Variable Mirroring**: Copy the `envs` section from your existing service to the debug worker. This ensures the debug container has the same connection strings and can test the exact same infrastructure your app uses.
+
 > **CRITICAL: Bindable Variable Syntax**
-> 
+>
 > In `${your-db-name.DATABASE_URL}`, the `your-db-name` part is **NOT** a reserved keyword—it's the **literal name** you defined in your `databases` section.
-> 
+>
 > | If your database is named... | Use this syntax... |
 > |------------------------------|-------------------|
 > | `name: your-db-name` | `${your-db-name.DATABASE_URL}` |
 > | `name: postgres` | `${postgres.DATABASE_URL}` |
 > | `name: main-db` | `${main-db.DATABASE_URL}` |
 > | `name: myapp-postgres` | `${myapp-postgres.DATABASE_URL}` |
-> 
+>
 > **Common mistake**: Using `${foo.DATABASE_URL}` when your database is named `bar` will result in the literal string `${foo.DATABASE_URL}` appearing in your env var instead of the actual connection string.
 
 ### Step 2: Deploy and Connect
@@ -781,30 +784,55 @@ databases:
 # Deploy the updated spec
 doctl apps update <app-id> --spec app-spec.yaml
 
-# Wait ~45 seconds, then connect via console
+# Wait ~30-45 seconds, then connect via console
 doctl apps console <app-id> debug
 ```
 
-### Step 3: Run Diagnostic Checklist
+On connection, you'll see a **startup banner** showing:
+- Available diagnostic scripts
+- Detected database connections
+- Pre-installed tools
 
-Inside the Alpine container:
+### Step 3: Run Built-in Diagnostics
+
+The debug container includes ready-to-use diagnostic scripts:
 
 ```bash
-# 1. Check if variables are populated
-echo "DATABASE_URL: $DATABASE_URL"
-echo "DB_HOST: $DB_HOST"
-echo "DB_USER: $DB_USER"
+# Full system diagnostic report
+./diagnose.sh
 
-# 2. Test DNS resolution
-nslookup $DB_HOST
+# Test specific database type
+./test-db.sh postgres    # PostgreSQL
+./test-db.sh mysql       # MySQL
+./test-db.sh mongo       # MongoDB
+./test-db.sh redis       # Redis/Valkey
+./test-db.sh kafka       # Kafka
+./test-db.sh opensearch  # OpenSearch
 
-# 3. Test port connectivity (install netcat first)
-apk add --no-cache netcat-openbsd
+# Test network connectivity to external services
+./test-connectivity.sh
+
+# Test DigitalOcean Spaces access
+./test-spaces.sh
+```
+
+**Manual checks** (if needed):
+
+```bash
+# Check environment variables
+env | grep -E 'DATABASE|REDIS|MONGO|KAFKA' | sort
+
+# Test DNS resolution
+dig $DB_HOST
+
+# Test port connectivity
 nc -zv $DB_HOST $DB_PORT
 
-# 4. Test actual database connection (install psql)
-apk add --no-cache postgresql-client
+# Direct database connection tests (clients pre-installed)
 psql "$DATABASE_URL" -c "SELECT 1;"
+mysql -h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASSWORD -e "SELECT 1;"
+mongosh "$MONGODB_URI" --eval "db.runCommand({ping:1})"
+redis-cli -u "$REDIS_URL" PING
 ```
 
 ### Interpreting Results
@@ -815,17 +843,8 @@ psql "$DATABASE_URL" -c "SELECT 1;"
 | Variables show `${your-db-name.X}` literally | **Database name mismatch** — the name in `${name.X}` doesn't match your `databases[].name` | Verify your database's `name` field and use that exact string |
 | DNS fails | Network/region mismatch | Check region match, VPC settings |
 | `nc` connection refused | Trusted sources blocking | Add App Platform to trusted sources in DB settings |
-| `psql` auth failed | User created via SQL not DO | Recreate user via `doctl databases user create` |
+| Auth failed | User created via SQL not DO | Recreate user via `doctl databases user create` |
 | SSL error | Missing sslmode | Use `${your-db-name.DATABASE_URL}` which includes `?sslmode=require` |
-
-### Step 4: Clean Up
-
-**IMPORTANT**: Delete the debug worker after troubleshooting to avoid costs.
-
-```bash
-# Remove debug worker from app spec and redeploy
-# Or delete via console: Components → debug → Delete
-```
 
 ### Standalone Debug App (Alternative)
 
@@ -838,24 +857,30 @@ region: nyc
 workers:
   - name: debug
     image:
-      registry_type: DOCKER_HUB
-      registry: library
-      repository: alpine
+      registry_type: GHCR
+      registry: ghcr.io
+      repository: bikramkgupta/do-app-debug-container-python
       tag: latest
-    run_command: sleep infinity
-    instance_size_slug: apps-s-1vcpu-0.5gb
+    instance_size_slug: apps-s-1vcpu-2gb
     envs:
       - key: DATABASE_URL
         scope: RUN_TIME
-        value: ${your-db-name.DATABASE_URL}   # "your-db-name" matches databases[].name below
+        value: ${db.DATABASE_URL}
+      - key: REDIS_URL
+        scope: RUN_TIME
+        value: ${cache.DATABASE_URL}
 
 databases:
-  - name: your-db-name                        # ← This name is referenced as ${your-db-name.XXXX}
+  - name: db
     engine: PG
     production: true
-    cluster_name: your-cluster-name  # Your actual cluster name from DO console
-    db_name: your-database           # The database name within the cluster
-    db_user: your-user               # The database user
+    cluster_name: your-cluster-name
+    db_name: your-database
+    db_user: your-user
+  - name: cache
+    engine: REDIS
+    production: true
+    cluster_name: your-valkey-cluster
 ```
 
 ```bash
@@ -864,14 +889,50 @@ doctl apps create --spec db-debug.yaml
 doctl apps delete <debug-app-id>
 ```
 
-### When to Use This Pattern
+### Debug Container Lifecycle Management
 
-✅ **Use Alpine debug when:**
+The debug container should only run when actively troubleshooting. Manage its lifecycle to avoid unnecessary costs:
+
+**While actively debugging**: Keep the debug worker running.
+
+**When done for now but may need later**: Archive the app to stop compute charges while preserving configuration.
+
+```yaml
+# Add to your app spec to archive
+name: db-debug
+maintenance:
+  archive: true
+  # Optional: show an offline page while archived
+  # offline_page_url: https://example.com/images/maintenance.png
+
+workers:
+  - name: debug
+    # ... rest of config
+```
+
+```bash
+# Archive via CLI
+doctl apps update <app-id> --spec archived-spec.yaml
+```
+
+**When completely done**: Delete the debug worker or app entirely.
+
+```bash
+# Remove debug worker from app spec and redeploy
+# Or delete standalone debug app
+doctl apps delete <debug-app-id>
+```
+
+### When to Use the Debug Container
+
+✅ **Use debug container when:**
 - App deploys but can't connect to database
 - Setting up a new managed database
 - Migrating from dev database to managed database
 - Troubleshooting "connection refused" errors
 - Verifying bindable variables work
+- Testing VPC connectivity and trusted sources
+- Diagnosing network issues to external services
 
 ❌ **Skip this when:**
 - Using dev database (simpler setup)
@@ -1163,7 +1224,7 @@ doctl apps spec get <app_id> > app_spec.yaml
 |---------|-----------|
 | App exits immediately | Check if listening on $PORT, not hardcoded port |
 | 502 errors | Check health endpoint, verify app is running |
-| Database connection fails | **Use Alpine Debug Pattern first** (~45s), then verify DATABASE_URL, VPC, trusted sources |
+| Database connection fails | **Use Debug Container first** (~30-45s), then verify DATABASE_URL, VPC, trusted sources |
 | Build fails | Check dependencies, review build logs |
 | OOM kills | Upgrade instance size or optimize memory usage |
 | Health checks fail | Ensure app listens on 0.0.0.0, not localhost |

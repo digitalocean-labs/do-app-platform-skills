@@ -103,10 +103,34 @@ vpc:
   id: <your-vpc-uuid>
 ```
 
-**Step 2:** Deploy the app and find the VPC egress IP:
+**Step 2:** Deploy the debug container and find the VPC egress IP:
+
+Deploy a debug container to verify VPC connectivity ([source](https://github.com/bikramkgupta/do-app-debug-container)):
+
+```yaml
+workers:
+  - name: debug
+    image:
+      registry_type: GHCR
+      registry: ghcr.io
+      repository: bikramkgupta/do-app-debug-container-python
+      tag: latest
+    instance_size_slug: apps-s-1vcpu-2gb
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db.DATABASE_URL}
+```
+
+Connect and find the VPC egress IP:
+
 ```bash
-# From inside the container
-doctl apps console <app_id> <component>
+doctl apps console <app_id> debug
+
+# Run built-in diagnostics (shows network info)
+./diagnose.sh
+
+# Or manually find VPC egress IP
 ip addr show | grep "inet 10\."
 # Look for 10.x.x.x — this is your VPC egress IP
 ```
@@ -118,6 +142,17 @@ CLUSTER_ID=$(doctl databases list --format ID,Name --no-header | grep my-db | aw
 # Use ip_addr rule (NOT app rule) for VPC
 doctl databases firewalls append $CLUSTER_ID --rule ip_addr:10.x.x.x
 ```
+
+**Step 4:** Verify connectivity from the debug container:
+```bash
+# Inside the debug container
+./test-db.sh postgres    # or: mysql, mongo, redis, kafka, opensearch
+
+# Or test directly (clients pre-installed)
+psql "$DATABASE_URL" -c "SELECT 1;"
+```
+
+**Step 5:** Clean up the debug container when verified — remove from app spec or archive the app.
 
 **Why this matters:**
 - `--rule app:<app-id>` only works when NOT using VPC
@@ -797,7 +832,7 @@ No additional GitHub Secrets needed for DO managed services — bindable variabl
 
 ### → troubleshooting skill
 
-For runtime connectivity issues, use troubleshooting skill's container debug pattern to verify environment variables.
+For runtime connectivity issues, use the troubleshooting skill's **debug container** to verify environment variables and test database connections with pre-installed clients.
 
 ---
 
