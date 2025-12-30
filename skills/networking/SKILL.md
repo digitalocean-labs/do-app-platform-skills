@@ -561,12 +561,23 @@ doctl apps get <app_id> -o json | jq '.[] | .dedicated_ips'
 # Or from the App Platform console:
 # Apps → Your App → Settings → scroll to "Network" section
 # Look for "VPC Egress IP" or "Private IP"
+```
 
-# Or from inside the container:
+**For AI Assistants** — Use the `do-app-sandbox` SDK:
+
+```python
+from do_app_sandbox import Sandbox
+
+app = Sandbox.get_from_id(app_id="your-app-id", component="your-component")
+result = app.exec("ip addr show | grep 'inet 10\\.'")
+print(result.stdout)  # Look for 10.x.x.x private IP
+```
+
+**For Humans** — Use the interactive console:
+
+```bash
 doctl apps console <app_id> <component>
-# Then run:
 ip addr show | grep "inet 10\."
-# Look for the 10.x.x.x private IP
 ```
 
 **Step 3: Add the private IP to database trusted sources**

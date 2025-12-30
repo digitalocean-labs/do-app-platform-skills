@@ -607,26 +607,38 @@ The debug container includes **all diagnostic tools pre-installed**:
 
 ### Verification Workflow
 
-After deploying, connect and run built-in diagnostics:
+After deploying, connect and run built-in diagnostics.
 
-```bash
-# Connect to debug container
-doctl apps console $APP_ID debug
+**For AI Assistants** — Use the `do-app-sandbox` SDK:
+
+```python
+from do_app_sandbox import Sandbox
+
+# Connect to the debug container
+debug = Sandbox.get_from_id(app_id="your-app-id", component="debug")
 
 # Run comprehensive diagnostics
-./diagnose.sh
+result = debug.exec("./diagnose.sh")
+print(result.stdout)
 
 # Test specific database types
+debug.exec("./test-db.sh postgres")
+debug.exec("./test-db.sh redis")
+
+# Test network and Spaces
+debug.exec("./test-connectivity.sh")
+debug.exec("./test-spaces.sh")
+```
+
+**For Humans** — Use the interactive console:
+
+```bash
+doctl apps console $APP_ID debug
+
+# Inside the container:
+./diagnose.sh
 ./test-db.sh postgres
-./test-db.sh redis
-./test-db.sh mongo
-./test-db.sh kafka
-
-# Test network connectivity
 ./test-connectivity.sh
-
-# Test Spaces/S3 access
-./test-spaces.sh
 ```
 
 ### Lifecycle Management

@@ -122,17 +122,31 @@ workers:
         value: ${db.DATABASE_URL}
 ```
 
-Connect and find the VPC egress IP:
+Connect and find the VPC egress IP.
+
+**For AI Assistants** — Use the `do-app-sandbox` SDK:
+
+```python
+from do_app_sandbox import Sandbox
+
+# Connect to the debug container
+debug = Sandbox.get_from_id(app_id="your-app-id", component="debug")
+
+# Run diagnostics (shows network info including VPC IP)
+result = debug.exec("./diagnose.sh")
+print(result.stdout)
+
+# Or manually find VPC egress IP
+result = debug.exec("ip addr show | grep 'inet 10\\.'")
+print(result.stdout)  # Look for 10.x.x.x
+```
+
+**For Humans** — Use the interactive console:
 
 ```bash
 doctl apps console <app_id> debug
-
-# Run built-in diagnostics (shows network info)
 ./diagnose.sh
-
-# Or manually find VPC egress IP
 ip addr show | grep "inet 10\."
-# Look for 10.x.x.x — this is your VPC egress IP
 ```
 
 **Step 3:** Add the IP to database trusted sources:
@@ -144,11 +158,21 @@ doctl databases firewalls append $CLUSTER_ID --rule ip_addr:10.x.x.x
 ```
 
 **Step 4:** Verify connectivity from the debug container:
-```bash
-# Inside the debug container
-./test-db.sh postgres    # or: mysql, mongo, redis, kafka, opensearch
+
+**For AI Assistants**:
+```python
+# Test database connectivity
+result = debug.exec("./test-db.sh postgres")  # or: mysql, mongo, redis, kafka, opensearch
+print(result.stdout)
 
 # Or test directly (clients pre-installed)
+result = debug.exec('psql "$DATABASE_URL" -c "SELECT 1;"')
+print(result.stdout)
+```
+
+**For Humans**:
+```bash
+./test-db.sh postgres
 psql "$DATABASE_URL" -c "SELECT 1;"
 ```
 

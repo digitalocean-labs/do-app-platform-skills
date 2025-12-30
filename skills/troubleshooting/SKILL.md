@@ -784,20 +784,72 @@ databases:
 # Deploy the updated spec
 doctl apps update <app-id> --spec app-spec.yaml
 
-# Wait ~30-45 seconds, then connect via console
+# Wait ~30-45 seconds for deployment to complete
+doctl apps get <app-id> -o json | jq -r '.[0].active_deployment.phase'
+# Wait until: ACTIVE
+```
+
+**For AI Assistants** — Use the SDK to connect and run commands programmatically:
+
+```python
+from do_app_sandbox import Sandbox
+
+# Connect to the debug container (works with ANY App Platform app)
+debug = Sandbox.get_from_id(
+    app_id="your-app-id",    # From doctl apps list
+    component="debug"         # The debug worker name
+)
+
+# Verify connection
+result = debug.exec("whoami")
+print(f"Connected as: {result.stdout.strip()}")
+```
+
+**For Humans** — Use the interactive console:
+
+```bash
 doctl apps console <app-id> debug
 ```
 
-On connection, you'll see a **startup banner** showing:
-- Available diagnostic scripts
-- Detected database connections
-- Pre-installed tools
-
 ### Step 3: Run Built-in Diagnostics
 
-The debug container includes ready-to-use diagnostic scripts:
+**Using SDK (for AI assistants)**:
+
+```python
+from do_app_sandbox import Sandbox
+
+debug = Sandbox.get_from_id(app_id="your-app-id", component="debug")
+
+# Run comprehensive diagnostics
+result = debug.exec("./diagnose.sh")
+print(result.stdout)
+
+# Test specific database type
+result = debug.exec("./test-db.sh postgres")  # or: mysql, mongo, redis, kafka, opensearch
+print(result.stdout)
+
+# Test network connectivity
+result = debug.exec("./test-connectivity.sh")
+print(result.stdout)
+
+# Test Spaces/S3 access
+result = debug.exec("./test-spaces.sh")
+print(result.stdout)
+
+# Check environment variables
+result = debug.exec("env | grep -E 'DATABASE|REDIS|MONGO|KAFKA' | sort")
+print(result.stdout)
+
+# Direct database connection tests (clients pre-installed)
+result = debug.exec('psql "$DATABASE_URL" -c "SELECT 1;"')
+print(result.stdout)
+```
+
+**Using Console (for humans)**:
 
 ```bash
+# Inside the debug container after running: doctl apps console <app-id> debug
+
 # Full system diagnostic report
 ./diagnose.sh
 
@@ -814,25 +866,6 @@ The debug container includes ready-to-use diagnostic scripts:
 
 # Test DigitalOcean Spaces access
 ./test-spaces.sh
-```
-
-**Manual checks** (if needed):
-
-```bash
-# Check environment variables
-env | grep -E 'DATABASE|REDIS|MONGO|KAFKA' | sort
-
-# Test DNS resolution
-dig $DB_HOST
-
-# Test port connectivity
-nc -zv $DB_HOST $DB_PORT
-
-# Direct database connection tests (clients pre-installed)
-psql "$DATABASE_URL" -c "SELECT 1;"
-mysql -h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASSWORD -e "SELECT 1;"
-mongosh "$MONGODB_URI" --eval "db.runCommand({ping:1})"
-redis-cli -u "$REDIS_URL" PING
 ```
 
 ### Interpreting Results

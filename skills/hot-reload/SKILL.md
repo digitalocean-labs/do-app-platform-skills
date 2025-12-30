@@ -306,12 +306,22 @@ User says: "My app crashed but I need to debug it in the cloud"
 **Agent Actions:**
 
 1. Confirm health check is on port 9090 (container stays alive)
-2. Provide shell access command:
+2. Connect and debug:
+
+   **For AI Assistants** — Use the SDK:
+   ```python
+   from do_app_sandbox import Sandbox
+
+   dev = Sandbox.get_from_id(app_id="your-app-id", component="dev-workspace")
+   result = dev.exec("ps aux")  # Check processes
+   print(result.stdout)
+   ```
+
+   **For Humans**:
    ```bash
    doctl apps console <APP_ID> dev-workspace
    ```
 3. Guide through debugging steps
-4. Suggest using do-app-sandbox for remote AI-assisted debugging
 
 **Key Insight:** Because health check runs on port 9090 (separate from app on 8080), the container stays alive even when the app crashes. This enables shell access for debugging.
 
@@ -430,7 +440,9 @@ gh workflow run deploy-app.yml -f action=env-vars
 gh workflow run deploy-app.yml -f action=env-vars -f include_only_env_vars="DATABASE_URL,API_KEY"
 ```
 
-### Manual Commands (doctl)
+### Manual Commands
+
+**doctl commands:**
 
 ```bash
 # Update app spec (triggers deploy if changed)
@@ -441,8 +453,21 @@ doctl apps create-deployment <APP_ID>
 
 # View logs
 doctl apps logs <APP_ID>
+```
 
-# Shell into container
+**Shell access — For AI Assistants** (use SDK):
+
+```python
+from do_app_sandbox import Sandbox
+
+dev = Sandbox.get_from_id(app_id="your-app-id", component="dev-workspace")
+result = dev.exec("ls -la /workspaces/app")
+print(result.stdout)
+```
+
+**Shell access — For Humans**:
+
+```bash
 doctl apps console <APP_ID> dev-workspace
 ```
 
@@ -490,8 +515,19 @@ health_check:
 ```bash
 # Check logs for sync messages
 doctl apps logs <APP_ID> | grep -i sync
+```
 
-# Shell in and check manually
+**For AI Assistants** — Check manually via SDK:
+```python
+from do_app_sandbox import Sandbox
+
+dev = Sandbox.get_from_id(app_id="your-app-id", component="dev-workspace")
+result = dev.exec("cd /workspaces/app && git log --oneline -5")
+print(result.stdout)
+```
+
+**For Humans**:
+```bash
 doctl apps console <APP_ID> dev-workspace
 cd /workspaces/app
 git log --oneline -5

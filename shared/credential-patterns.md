@@ -354,28 +354,47 @@ Deploy a debug worker to check values are populated (not their contents):
 workers:
   - name: debug
     image:
-      registry_type: DOCKER_HUB
-      registry: library
-      repository: alpine
+      registry_type: GHCR
+      registry: ghcr.io
+      repository: bikramkgupta/do-app-debug-container-python
       tag: latest
-    run_command: sleep infinity
+    instance_size_slug: apps-s-1vcpu-2gb
     envs:
       - key: DATABASE_URL
+        scope: RUN_TIME
         value: ${db.DATABASE_URL}
 ```
 
-Then connect and verify length/format:
+Then connect and verify length/format.
+
+**For AI Assistants** — Use the SDK:
+```python
+from do_app_sandbox import Sandbox
+
+debug = Sandbox.get_from_id(app_id="your-app-id", component="debug")
+result = debug.exec('echo "DATABASE_URL length: ${#DATABASE_URL}"')
+print(result.stdout)
+result = debug.exec('echo "DATABASE_URL starts with: ${DATABASE_URL:0:15}..."')
+print(result.stdout)
+```
+
+**For Humans**:
 ```bash
 doctl apps console $APP_ID debug
-# Inside container:
 echo "DATABASE_URL length: ${#DATABASE_URL}"
 echo "DATABASE_URL starts with: ${DATABASE_URL:0:15}..."
 ```
 
 ### Test Database Connectivity
 
+**For AI Assistants**:
+```python
+result = debug.exec('psql "$DATABASE_URL" -c "SELECT 1;"')
+print("Connection successful" if result.exit_code == 0 else result.stderr)
+```
+
+**For Humans**:
 ```bash
-# Test connection works (without showing password)
 psql "$DATABASE_URL" -c "SELECT 1;" && echo "Connection successful"
 ```
 
