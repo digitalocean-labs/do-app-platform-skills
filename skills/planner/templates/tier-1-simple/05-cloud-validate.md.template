@@ -1,0 +1,79 @@
+# Stage 5: Cloud Validate
+
+**Status**: TODO
+**Prerequisites**: App deployed (Stage 4)
+
+---
+
+## Overview
+
+Validate the deployed application is accessible and working correctly.
+
+---
+
+## Application URL
+
+```bash
+APP_URL=$(doctl apps get $APP_ID --format DefaultIngress --no-header)
+echo $APP_URL
+```
+
+App URL: `____________`
+
+---
+
+## Tests
+
+### 5.1 Accessibility
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" $APP_URL
+```
+
+- [ ] Returns 200
+
+### 5.2 Content Verification
+
+Open browser: `$APP_URL`
+
+- [ ] Page loads correctly
+- [ ] Content displays as expected
+- [ ] No console errors
+- [ ] Assets load (CSS, JS, images)
+
+### 5.3 Mobile Responsiveness (Optional)
+
+- [ ] Responsive on mobile viewport
+
+---
+
+## Final Checklist
+
+| Test | Status |
+|------|--------|
+| Site accessible | [ ] |
+| Content correct | [ ] |
+| Assets load | [ ] |
+
+---
+
+## Deployment Complete
+
+- [ ] All tests passed
+- [ ] Site is live
+
+---
+
+## Post-Deployment
+
+1. **Custom domain** (optional)
+   ```bash
+   doctl apps update $APP_ID --spec .do/app.yaml
+   # Add domain configuration to app.yaml first
+   ```
+
+2. **SSL Certificate**: Automatic via Let's Encrypt
+
+3. **CDN**: Enabled by default for static assets
+
+4. **Documentation**: Record app URL, deployment date

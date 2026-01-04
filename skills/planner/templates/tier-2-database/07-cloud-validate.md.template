@@ -1,0 +1,80 @@
+# Stage 7: Cloud Validate
+
+**Status**: TODO
+**Prerequisites**: App deployed (Stage 6)
+
+---
+
+## Overview
+
+Validate the deployed application is working correctly.
+
+---
+
+## Application URL
+
+```bash
+APP_URL=$(doctl apps get $APP_ID --format DefaultIngress --no-header)
+echo $APP_URL
+```
+
+App URL: `____________`
+
+---
+
+## Tests
+
+### 7.1 API Testing
+
+```bash
+# Health check
+curl -s $APP_URL/healthz
+
+# API endpoint
+curl -s $APP_URL/api/{{ENDPOINT}} | jq
+```
+
+- [ ] Health check passes
+- [ ] API returns expected data
+
+### 7.2 Database Verification
+
+```bash
+# Check migrations ran
+psql "$DATABASE_URL" -c "\dt"
+```
+
+- [ ] Tables exist
+
+### 7.3 Frontend Testing
+
+Open browser: `$APP_URL`
+
+- [ ] Homepage loads
+- [ ] Data displays correctly
+- [ ] Forms work
+
+---
+
+## Final Checklist
+
+| Test | Status |
+|------|--------|
+| API responds | [ ] |
+| Database connected | [ ] |
+| Frontend works | [ ] |
+
+---
+
+## Deployment Complete
+
+- [ ] All tests passed
+- [ ] App is production ready
+
+---
+
+## Post-Deployment
+
+1. **Custom domain** (optional): See networking skill
+2. **Monitoring**: DO Console → Apps → Alerts
+3. **Documentation**: Record app URL

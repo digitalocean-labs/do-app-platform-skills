@@ -1,0 +1,127 @@
+# Stage 6: Cloud Debug Validation
+
+**Status**: TODO
+**Prerequisites**: Users & topics created (Stage 5)
+
+---
+
+## Overview
+
+Configure trusted sources and deploy a debug container to validate VPC connectivity before deploying the production app.
+
+**All captured values (IDs, passwords, URLs) are stored in `.env.secrets`** - this file contains status tracking only.
+
+---
+
+## Tasks
+
+### 6.1 Get VPC CIDR
+
+```bash
+# Get your VPC's CIDR range
+doctl vpcs get $VPC_ID --format IPRange
+```
+
+- [ ] VPC CIDR saved to `.env.secrets` as `VPC_CIDR`
+
+### 6.2 Configure Trusted Sources (VPC CIDR)
+
+Add the VPC CIDR to database trusted sources. This allows any app in the VPC to connect.
+
+```bash
+# PostgreSQL
+doctl databases firewalls append $PG_ID --rule ip_addr:$VPC_CIDR
+
+# OpenSearch
+doctl databases firewalls append $OS_ID --rule ip_addr:$VPC_CIDR
+
+# Verify
+doctl databases firewalls list $PG_ID
+doctl databases firewalls list $OS_ID
+```
+
+- [ ] PostgreSQL trusted source added
+- [ ] OpenSearch trusted source added
+
+**Note**: Kafka does NOT support trusted sources - skip. Both public and private URLs work for Kafka.
+
+### 6.3 Deploy Debug Container
+
+```bash
+doctl apps create --spec .do/app-debug.yaml
+```
+
+- [ ] App created
+- [ ] App ID saved to `.env.secrets` as `DEBUG_APP_ID`
+
+### 6.4 Run Connectivity Tests
+
+```bash
+# Access debug container console
+doctl apps console $DEBUG_APP_ID debug
+
+# Inside container:
+./test-db.sh postgres
+./test-db.sh opensearch
+./test-connectivity.sh
+```
+
+---
+
+## Validation Checklist
+
+| Service | Private URL | Status |
+|---------|-------------|--------|
+| PostgreSQL | [ ] Pass | |
+| Kafka | [ ] Pass | |
+| OpenSearch | [ ] Pass | |
+
+---
+
+## Artifact Storage
+
+All captured values are stored in `.env.secrets` (gitignored):
+- `VPC_CIDR` - VPC CIDR range for trusted sources
+- `DEBUG_APP_ID` - Debug container app ID
+
+**To resume this stage**, read `.env.secrets` for context.
+
+---
+
+## Why VPC CIDR Instead of Per-App IP?
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  App-based trusted sources (`app:$APP_ID`) whitelist PUBLIC IP only.       │
+│  VPC apps connect via PRIVATE IP → connection refused.                     │
+│                                                                             │
+│  VPC CIDR whitelisting solves this:                                         │
+│  - One-time setup per database                                              │
+│  - All apps in VPC work immediately                                         │
+│  - No need to track individual app IPs                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Troubleshooting
+
+### Connection Refused (PostgreSQL/OpenSearch)
+1. Check trusted sources: `doctl databases firewalls list $PG_ID`
+2. Verify VPC CIDR is correct: `doctl vpcs get $VPC_ID --format IPRange`
+3. Ensure app is in the same VPC: check `vpc.id` in app spec
+4. Wait 2-3 minutes for propagation
+
+### DNS Resolution Failure
+1. Verify VPC ID matches: `doctl vpcs list`
+2. Check private hostname format (starts with `private-`)
+
+### SSL/TLS Errors
+1. DigitalOcean uses self-signed certificates
+2. Use `sslmode=require` (not `verify-full`)
+
+---
+
+## Next Steps
+
+Once all connectivity tests pass, proceed to Stage 7: Cloud Secrets & CI/CD

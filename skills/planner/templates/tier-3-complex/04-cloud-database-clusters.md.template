@@ -1,0 +1,101 @@
+# Stage 4: Cloud Database Clusters
+
+**Status**: TODO
+**Prerequisites**: Local testing complete (Stage 3)
+
+---
+
+## Overview
+
+Create managed database clusters in DigitalOcean. These must be online before proceeding.
+
+**All captured values (IDs, passwords, URLs) are stored in `.env.secrets`** - this file contains status tracking only.
+
+---
+
+## Tasks
+
+### 4.1 Create PostgreSQL Cluster
+
+```bash
+doctl databases create <app-name>-postgres \
+  --engine pg \
+  --version 16 \
+  --region <region> \
+  --size db-s-1vcpu-2gb \
+  --num-nodes 1
+```
+
+- [ ] Cluster created
+- [ ] Cluster ID saved to `.env.secrets` as `PG_ID`
+
+### 4.2 Create Kafka Cluster
+
+```bash
+doctl databases create <app-name>-kafka \
+  --engine kafka \
+  --version 3.8 \
+  --region <region> \
+  --size db-s-2vcpu-4gb \
+  --num-nodes 3
+```
+
+- [ ] Cluster created
+- [ ] Cluster ID saved to `.env.secrets` as `KAFKA_ID`
+
+### 4.3 Create OpenSearch Cluster
+
+```bash
+doctl databases create <app-name>-opensearch \
+  --engine opensearch \
+  --version 2 \
+  --region <region> \
+  --size db-s-2vcpu-4gb \
+  --num-nodes 1
+```
+
+- [ ] Cluster created
+- [ ] Cluster ID saved to `.env.secrets` as `OS_ID`
+
+### 4.4 Create Spaces Bucket (Optional)
+
+- [ ] Via DO Console: Create bucket in region
+
+---
+
+## Verification
+
+```bash
+doctl databases list --format ID,Name,Engine,Region,Status
+```
+
+| Check | Status |
+|-------|--------|
+| PostgreSQL cluster online | [ ] |
+| Kafka cluster online | [ ] |
+| OpenSearch cluster online | [ ] |
+
+---
+
+## Artifact Storage
+
+All captured values are stored in `.env.secrets` (gitignored):
+- `PG_ID` - PostgreSQL cluster ID
+- `KAFKA_ID` - Kafka cluster ID
+- `OS_ID` - OpenSearch cluster ID
+
+**To resume this stage**, read `.env.secrets` for context.
+
+---
+
+## Notes
+
+- Cluster creation takes 5-10 minutes each
+- Wait for status "online" before proceeding to Stage 5
+- Kafka requires minimum 3 nodes for production use
+
+---
+
+## Next Steps
+
+Proceed to Stage 5: Cloud Config - Users & Topics

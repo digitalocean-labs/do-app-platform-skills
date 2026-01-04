@@ -1,0 +1,123 @@
+# Stage 8: Cloud Deploy Production
+
+**Status**: TODO
+**Prerequisites**: Secrets & CI/CD configured (Stage 7)
+
+---
+
+## Overview
+
+Deploy the full production application with all services and workers.
+
+---
+
+## Pre-Deployment Checklist
+
+- [ ] `.do/app.yaml` has correct VPC ID
+- [ ] All SECRET env vars reference `${SECRET_NAME}` format
+- [ ] **`deploy_on_push: false`** set for ALL components (required for GitHub Actions)
+- [ ] All GitHub secrets configured
+- [ ] Debug container connectivity AND permissions passed (Stage 6)
+
+**CRITICAL**: Tier 3 apps with secrets MUST use GitHub Actions deployment. The `doctl apps create` command does NOT inject GitHub Secrets - `${SECRET_NAME}` will appear as literal text.
+
+---
+
+## Deploy via GitHub Actions
+
+**Why GitHub Actions (not doctl)?** The `digitalocean/app_action/deploy@v2` action injects GitHub Secrets into `${SECRET_NAME}` placeholders. Neither `doctl` nor `deploy_on_push: true` performs this injection.
+
+```bash
+# Push to main branch to trigger deployment
+git push origin main
+
+# Or trigger manually via GitHub Actions tab
+```
+
+- [ ] Deployment started (check GitHub Actions)
+- [ ] Capture app ID: `APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | grep {{APP_NAME}} | awk '{print $1}')`
+
+---
+
+## Monitor Deployment
+
+```bash
+# Get app ID
+APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | grep {{APP_NAME}} | awk '{print $1}')
+
+# Watch build logs
+doctl apps logs $APP_ID --type build --follow
+
+# Watch deployment logs
+doctl apps logs $APP_ID --type deploy --follow
+
+# Check status
+doctl apps get $APP_ID --format DefaultIngress,ActiveDeployment.Phase
+```
+
+---
+
+## Build Progress
+
+| Component | Build Status | Notes |
+|-----------|--------------|-------|
+| {{SERVICE_1}} | [ ] | |
+| {{SERVICE_2}} | [ ] | |
+| {{SERVICE_3}} | [ ] | |
+| {{WORKER_1}} | [ ] | |
+| {{WORKER_2}} | [ ] | |
+| db-migrate (PRE_DEPLOY) | [ ] | Runs first |
+
+---
+
+## Health Check Verification
+
+| Service | Endpoint | Expected | Status |
+|---------|----------|----------|--------|
+| {{SERVICE_1}} | /healthz | 200 OK | [ ] |
+| {{SERVICE_2}} | /healthz | 200 OK | [ ] |
+| {{SERVICE_3}} | / | 200 OK | [ ] |
+
+```bash
+APP_URL=$(doctl apps get $APP_ID --format DefaultIngress --no-header)
+curl -s $APP_URL/healthz
+```
+
+---
+
+## Deployment Result
+
+- [ ] App URL: `https://{{APP_NAME}}-_____.ondigitalocean.app`
+- [ ] All services healthy
+- [ ] All workers running
+
+---
+
+## Troubleshooting
+
+### Build Failures
+```bash
+doctl apps logs $APP_ID --type build --component <component-name>
+```
+
+### Runtime Errors
+```bash
+doctl apps logs $APP_ID --type run --component <component-name> --follow
+```
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `${SECRET_NAME}` in logs | Deployed via doctl, not GitHub Actions | Redeploy via `git push` |
+| Database connection refused | Trusted sources blocking | Add VPC IP (Stage 6) |
+| `permission denied for database` | User lacks CREATE TABLE | Grant privileges as doadmin |
+| Kafka auth failed | Wrong credentials | Verify bindings |
+| PRE_DEPLOY job failed | Migration or permission error | Check DATABASE_URL and user perms |
+| Health check timeout | App not starting | Check runtime logs |
+
+---
+
+## Next Steps
+
+Proceed to Stage 9: Cloud End-to-End Validation

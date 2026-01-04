@@ -1,0 +1,153 @@
+# Stage 9: Cloud End-to-End Validation
+
+**Status**: TODO
+**Prerequisites**: Production app deployed (Stage 8)
+
+---
+
+## Overview
+
+Validate the complete data flow from ingestion through processing to output.
+
+---
+
+## Application URL
+
+```bash
+APP_URL=$(doctl apps get $APP_ID --format DefaultIngress --no-header)
+echo $APP_URL
+```
+
+App URL: `https://{{APP_NAME}}-_____.ondigitalocean.app`
+
+---
+
+## Tests
+
+### 9.1 Database Seeding
+
+Before testing, ensure seed data exists:
+
+```bash
+# Via debug container
+doctl apps console $DEBUG_APP_ID debug
+psql "$DATABASE_PRIVATE_URL" -c "SELECT COUNT(*) FROM {{TABLE_NAME}}"
+```
+
+- [ ] Seed data verified or inserted
+
+### 9.2 API Testing
+
+```bash
+# Test primary endpoint
+curl -X POST $APP_URL/{{API_ENDPOINT}} \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: <api-key>" \
+  -d '{{TEST_PAYLOAD}}'
+```
+
+- [ ] Response: Expected status code
+- [ ] Body: Expected format
+
+### 9.3 Kafka Message Flow
+
+```bash
+# Check messages in topic
+doctl apps console $DEBUG_APP_ID debug
+kcat -b $KAFKA_PRIVATE_BROKERS -C -t {{KAFKA_TOPIC_1}} -c 1 \
+  -X security.protocol=SASL_SSL \
+  -X sasl.mechanisms=SCRAM-SHA-256 \
+  -X sasl.username=$KAFKA_USERNAME \
+  -X sasl.password=$KAFKA_PASSWORD
+```
+
+- [ ] Messages visible in topic
+
+### 9.4 Worker Processing
+
+Check worker logs for processing:
+
+```bash
+doctl apps logs $APP_ID --component {{WORKER_1}} --follow
+```
+
+- [ ] {{WORKER_1}} processing messages
+- [ ] {{WORKER_2}} processing messages
+
+### 9.5 Database Verification
+
+```bash
+# Check data was processed
+psql "$DATABASE_PRIVATE_URL" -c "SELECT * FROM {{OUTPUT_TABLE}} LIMIT 5"
+```
+
+- [ ] Data present in output table
+
+### 9.6 Frontend Validation
+
+Open browser: `$APP_URL`
+
+- [ ] Homepage loads
+- [ ] Data displays correctly
+- [ ] Interactive features work
+- [ ] Theme toggle works (if applicable)
+
+---
+
+## Final Validation Checklist
+
+| Test | Status |
+|------|--------|
+| API responds correctly | [ ] |
+| Kafka messages flow | [ ] |
+| Workers processing | [ ] |
+| Database updated | [ ] |
+| Frontend displays data | [ ] |
+
+---
+
+## Load Test (Optional)
+
+```bash
+# Send multiple requests
+for i in {1..10}; do
+  curl -X POST $APP_URL/{{API_ENDPOINT}} \
+    -H "Content-Type: application/json" \
+    -d '{{TEST_PAYLOAD}}'
+  sleep 1
+done
+```
+
+---
+
+## Cleanup Test Data (Optional)
+
+```bash
+# Clear test data
+psql "$DATABASE_PRIVATE_URL" -c "DELETE FROM {{TABLE_NAME}} WHERE ..."
+```
+
+---
+
+## Deployment Complete
+
+- [ ] All tests passed
+- [ ] Production app is fully functional
+- [ ] Ready for real traffic
+
+---
+
+## Post-Deployment Tasks
+
+1. **Configure custom domain** (optional)
+   - See networking skill
+
+2. **Set up monitoring/alerts** (optional)
+   - DO Console → Apps → Alerts
+
+3. **Archive debug container** (optional)
+   - Keep for troubleshooting or delete to save costs
+
+4. **Update documentation**
+   - Record app URL, deployment date
+   - Update team on new deployment

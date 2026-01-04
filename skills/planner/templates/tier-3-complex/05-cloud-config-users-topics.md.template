@@ -1,0 +1,101 @@
+# Stage 5: Cloud Config - Users & Topics
+
+**Status**: TODO
+**Prerequisites**: Database clusters online (Stage 4)
+
+---
+
+## Overview
+
+Create application-level resources: databases, users, and Kafka topics.
+
+**All captured values (IDs, passwords, URLs) are stored in `.env.secrets`** - this file contains status tracking only.
+
+---
+
+## Tasks
+
+### 5.1 PostgreSQL Database & User
+
+```bash
+# Create database
+doctl databases db create $PG_ID <db_name>
+
+# Create user (password auto-generated, save to .env.secrets)
+doctl databases user create $PG_ID <username>
+```
+
+- [ ] Database created
+- [ ] User created
+- [ ] Password saved to `.env.secrets`
+
+### 5.2 Kafka Topics
+
+```bash
+# Create topics (3 partitions, replication factor 2)
+# NOTE: Use --partition-count (not --partitions)
+doctl databases topics create $KAFKA_ID <topic_name> --partition-count 3 --replication-factor 2
+```
+
+- [ ] Topics created
+- [ ] Topic names recorded in `.env.secrets`
+
+### 5.3 OpenSearch User
+
+```bash
+# Create user (password auto-generated, save to .env.secrets)
+doctl databases user create $OS_ID <username>
+```
+
+- [ ] User created
+- [ ] Password saved to `.env.secrets`
+
+### 5.4 Capture Connection Info
+
+```bash
+# PostgreSQL
+doctl databases connection $PG_ID --format Host,Port,User,Password,Database
+
+# Kafka
+doctl databases connection $KAFKA_ID --format Host,Port,User,Password
+
+# OpenSearch
+doctl databases connection $OS_ID --format Host,Port,User,Password
+```
+
+- [ ] All connection info captured to `.env.secrets`
+
+---
+
+## Verification
+
+```bash
+# List topics
+doctl databases topics list $KAFKA_ID
+
+# Verify database
+doctl databases db list $PG_ID
+
+# Verify users
+doctl databases user list $PG_ID
+doctl databases user list $OS_ID
+```
+
+---
+
+## Artifact Storage
+
+All captured values are stored in `.env.secrets` (gitignored):
+- Cluster IDs: `PG_ID`, `KAFKA_ID`, `OS_ID`
+- Passwords: `PG_PASSWORD`, `OS_PASSWORD`, `KAFKA_PASSWORD`
+- Hosts: `PG_HOST`, `KAFKA_HOST`, `OS_HOST`
+- Private hosts: `PG_PRIVATE_HOST`, `KAFKA_PRIVATE_HOST`, `OS_PRIVATE_HOST`
+- Connection URLs: `DATABASE_PRIVATE_URL`, `KAFKA_PRIVATE_BROKERS`, `OPENSEARCH_PRIVATE_URL`
+
+**To resume this stage**, read `.env.secrets` for context.
+
+---
+
+## Next Steps
+
+Proceed to Stage 6: Cloud Debug Validation

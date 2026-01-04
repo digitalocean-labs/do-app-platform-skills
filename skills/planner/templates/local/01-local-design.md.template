@@ -1,0 +1,38 @@
+# Stage 1: Local Design
+
+**Status**: TODO
+**Prerequisites**: None
+
+---
+
+## Overview
+
+Define the application architecture, UI/UX decisions, and data model.
+
+---
+
+## Tasks
+
+### 1.1 Product Definition
+- [ ] Define product name and tagline
+- [ ] Identify target users
+- [ ] List core features
+
+### 1.2 Architecture Decisions
+- [ ] Choose UI framework (React, Vue, etc.)
+- [ ] Choose API framework (Express, Fastify, etc.)
+- [ ] Choose database (PostgreSQL, MySQL, etc.)
+- [ ] Define service boundaries (if multi-service)
+
+### 1.3 Data Model
+- [ ] Define core entities
+- [ ] Design database schema
+- [ ] Identify relationships
+
+---
+
+## Artifacts
+
+- [ ] Architecture diagram (optional)
+- [ ] Database schema design
+- [ ] API endpoint list

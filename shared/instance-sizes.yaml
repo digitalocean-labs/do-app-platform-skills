@@ -1,0 +1,141 @@
+# DigitalOcean App Platform Instance Sizes
+# Single source of truth for all skills
+#
+# Usage in Python:
+#   import yaml
+#   with open('shared/instance-sizes.yaml') as f:
+#       sizes = yaml.safe_load(f)
+#
+# Usage in skills: Reference this file for accurate pricing and specs
+
+# Instance size specifications
+# Prices are per month, per instance
+sizes:
+  # Shared CPU instances (cost-effective, burstable)
+  shared:
+    - slug: apps-s-1vcpu-0.5gb
+      cpu: 1 shared
+      memory_mb: 512
+      price_monthly: 5
+      scalable: false
+      recommended_for: [workers, jobs, small-apps]
+
+    - slug: apps-s-1vcpu-1gb-fixed
+      cpu: 1 shared
+      memory_mb: 1024
+      price_monthly: 10
+      scalable: false
+      recommended_for: [workers, jobs]
+
+    - slug: apps-s-1vcpu-1gb
+      cpu: 1 shared
+      memory_mb: 1024
+      price_monthly: 12
+      scalable: true
+      recommended_for: [services, workers]
+      default_for: [test-service]  # Recommended default for testing
+
+    - slug: apps-s-1vcpu-2gb
+      cpu: 1 shared
+      memory_mb: 2048
+      price_monthly: 25
+      scalable: true
+      recommended_for: [services, memory-intensive-workers]
+
+    - slug: apps-s-2vcpu-4gb
+      cpu: 2 shared
+      memory_mb: 4096
+      price_monthly: 50
+      scalable: true
+      recommended_for: [services, high-traffic]
+
+  # Dedicated CPU instances (consistent performance)
+  dedicated:
+    - slug: apps-d-1vcpu-0.5gb
+      cpu: 1 dedicated
+      memory_mb: 512
+      price_monthly: 29
+      scalable: true
+      recommended_for: [latency-sensitive]
+
+    - slug: apps-d-1vcpu-1gb
+      cpu: 1 dedicated
+      memory_mb: 1024
+      price_monthly: 34
+      scalable: true
+      recommended_for: [production-workers]
+
+    - slug: apps-d-1vcpu-2gb
+      cpu: 1 dedicated
+      memory_mb: 2048
+      price_monthly: 39
+      scalable: true
+      recommended_for: [production-services]
+      default_for: [production-service]  # Recommended default for production
+
+    - slug: apps-d-1vcpu-4gb
+      cpu: 1 dedicated
+      memory_mb: 4096
+      price_monthly: 49
+      scalable: true
+      recommended_for: [memory-intensive]
+
+    - slug: apps-d-2vcpu-4gb
+      cpu: 2 dedicated
+      memory_mb: 4096
+      price_monthly: 78
+      scalable: true
+      recommended_for: [cpu-intensive]
+
+    - slug: apps-d-2vcpu-8gb
+      cpu: 2 dedicated
+      memory_mb: 8192
+      price_monthly: 98
+      scalable: true
+      recommended_for: [high-performance]
+
+    - slug: apps-d-4vcpu-8gb
+      cpu: 4 dedicated
+      memory_mb: 8192
+      price_monthly: 156
+      scalable: true
+      recommended_for: [cpu-bound-workloads]
+
+    - slug: apps-d-4vcpu-16gb
+      cpu: 4 dedicated
+      memory_mb: 16384
+      price_monthly: 196
+      scalable: true
+      recommended_for: [large-applications]
+
+    - slug: apps-d-8vcpu-32gb
+      cpu: 8 dedicated
+      memory_mb: 32768
+      price_monthly: 392
+      scalable: true
+      recommended_for: [enterprise, high-compute]
+
+# Environment-based defaults (used by migration and designer skills)
+environment_defaults:
+  test:
+    service: apps-s-1vcpu-1gb
+    worker: apps-s-1vcpu-0.5gb
+    job: apps-s-1vcpu-0.5gb
+  staging:
+    service: apps-s-1vcpu-1gb
+    worker: apps-s-1vcpu-0.5gb
+    job: apps-s-1vcpu-0.5gb
+  production:
+    service: apps-d-1vcpu-2gb
+    worker: apps-d-1vcpu-1gb
+    job: apps-s-1vcpu-1gb
+
+# Sizing guidance
+guidance:
+  start_with: apps-s-1vcpu-1gb
+  use_dedicated_when:
+    - Consistent performance required
+    - Latency-sensitive applications
+    - Production workloads with SLAs
+  workers_vs_services: "Workers can often use smaller instances than services"
+  scaling_note: "Only scalable instances support horizontal autoscaling"

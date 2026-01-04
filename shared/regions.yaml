@@ -1,0 +1,140 @@
+# DigitalOcean App Platform Regions
+# Single source of truth for all skills
+#
+# Usage in Python:
+#   import yaml
+#   with open('shared/regions.yaml') as f:
+#       regions = yaml.safe_load(f)
+
+# Available App Platform regions
+regions:
+  - slug: nyc
+    name: New York
+    country: USA
+    continent: North America
+    default: true  # Recommended default region
+
+  - slug: sfo
+    name: San Francisco
+    country: USA
+    continent: North America
+
+  - slug: ams
+    name: Amsterdam
+    country: Netherlands
+    continent: Europe
+
+  - slug: lon
+    name: London
+    country: UK
+    continent: Europe
+
+  - slug: fra
+    name: Frankfurt
+    country: Germany
+    continent: Europe
+
+  - slug: tor
+    name: Toronto
+    country: Canada
+    continent: North America
+
+  - slug: sgp
+    name: Singapore
+    country: Singapore
+    continent: Asia
+
+  - slug: blr
+    name: Bangalore
+    country: India
+    continent: Asia
+
+  - slug: syd
+    name: Sydney
+    country: Australia
+    continent: Oceania
+
+  - slug: atl
+    name: Atlanta
+    country: USA
+    continent: North America
+    notes: Low latency for US East
+
+# Region mappings from other platforms (used by migration skill)
+platform_mappings:
+  # Heroku regions
+  heroku:
+    us: nyc
+    eu: ams
+
+  # AWS regions
+  aws:
+    us-east-1: nyc
+    us-east-2: nyc      # Ohio -> NYC
+    us-west-1: sfo
+    us-west-2: sfo      # Oregon -> SFO
+    eu-west-1: lon      # Ireland -> London
+    eu-west-2: lon      # London
+    eu-west-3: fra      # Paris -> Frankfurt
+    eu-central-1: fra   # Frankfurt
+    eu-north-1: ams     # Stockholm -> Amsterdam
+    ap-south-1: blr     # Mumbai -> Bangalore
+    ap-southeast-1: sgp # Singapore
+    ap-southeast-2: syd # Sydney
+    ap-northeast-1: sgp # Tokyo -> Singapore (closest)
+    ap-northeast-2: sgp # Seoul -> Singapore
+    ca-central-1: tor   # Canada
+    sa-east-1: nyc      # Sao Paulo -> NYC (closest)
+
+  # Render regions
+  render:
+    oregon: sfo
+    ohio: nyc
+    virginia: nyc
+    frankfurt: fra
+    singapore: sgp
+
+  # Railway regions (approximate mappings)
+  railway:
+    us-west: sfo
+    us-east: nyc
+    eu-west: ams
+    asia-southeast: sgp
+
+  # Fly.io regions (approximate mappings)
+  fly:
+    iad: nyc      # Ashburn -> NYC
+    lax: sfo      # Los Angeles -> SFO
+    sea: sfo      # Seattle -> SFO
+    ord: nyc      # Chicago -> NYC
+    ewr: nyc      # Newark -> NYC
+    dfw: nyc      # Dallas -> NYC
+    den: sfo      # Denver -> SFO
+    ams: ams      # Amsterdam
+    cdg: fra      # Paris -> Frankfurt
+    fra: fra      # Frankfurt
+    lhr: lon      # London
+    mad: fra      # Madrid -> Frankfurt
+    sin: sgp      # Singapore
+    hkg: sgp      # Hong Kong -> Singapore
+    nrt: sgp      # Tokyo -> Singapore
+    syd: syd      # Sydney
+    bom: blr      # Mumbai -> Bangalore
+    gru: nyc      # Sao Paulo -> NYC
+
+# Default region selection
+defaults:
+  primary: nyc
+  fallback_order: [nyc, sfo, ams, fra, sgp]
+
+# Region selection guidance
+guidance:
+  user_base_considerations:
+    - "Choose region closest to majority of users"
+    - "For global apps, consider multiple deployments or CDN"
+  compliance:
+    - "EU users may require EU region (GDPR)"
+    - "Some industries require data residency"
+  latency_notes:
+    - "Database and app should be in same region"
+    - "Cross-region latency adds 50-200ms"

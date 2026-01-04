@@ -1,0 +1,91 @@
+# Stage 3: Local Testing & Validation
+
+**Status**: TODO
+**Prerequisites**: Stage 2 complete (or existing codebase with Dockerfiles + app.yaml)
+
+---
+
+## Overview
+
+Validate the application locally before cloud deployment. **This is the critical gate** — `doctl app dev build` and health check validation catch 90% of deployment failures.
+
+For brownfield projects, you may skip directly to Steps 3.5 and 3.6 if functional testing was already done.
+
+---
+
+## Tasks
+
+### 3.1 Start Local Environment
+- [ ] Start devcontainer or docker-compose
+- [ ] Verify all services start
+
+### 3.2 Database Setup
+- [ ] Run migrations
+- [ ] Seed test data
+
+### 3.3 Functional Testing
+- [ ] Test API endpoints
+- [ ] Test UI flows
+- [ ] Test error handling
+
+### 3.4 Build Verification
+- [ ] Production build succeeds
+- [ ] Docker images build locally
+
+### 3.5 App Platform Local Build (CRITICAL)
+**This step catches 90% of cloud build failures before they happen.**
+
+- [ ] Ensure `doctl` version 1.82.0+: `doctl version`
+- [ ] Ensure Docker is running: `docker info`
+- [ ] Run App Platform local build: `doctl app dev build`
+- [ ] For each component, verify build completes without errors
+- [ ] Note the Docker run command provided on success
+
+### 3.6 Health Check Validation (CRITICAL)
+**This step catches 90% of cloud deploy failures before they happen.**
+
+- [ ] Start each service container from 3.5 output
+- [ ] Test health endpoint: `curl -f http://localhost:PORT/health`
+- [ ] Verify response is HTTP 200 (not 404, 500, or timeout)
+- [ ] Confirm health check path in `.do/app.yaml` matches actual endpoint:
+  ```yaml
+  health_check:
+    http_path: /health        # Must match your actual endpoint
+    initial_delay_seconds: 10
+    timeout_seconds: 10
+  ```
+- [ ] Test health check responds within timeout (default 10s)
+
+---
+
+## Verification
+
+| Check | Expected | Status |
+|-------|----------|--------|
+| All services start | Yes | [ ] |
+| API tests pass | Yes | [ ] |
+| UI accessible | Yes | [ ] |
+| `doctl app dev build` | All components succeed | [ ] |
+| Health check returns 200 | Each service | [ ] |
+| Health path matches app spec | Yes | [ ] |
+
+---
+
+## Troubleshooting
+
+### Build Fails Locally
+- Check Dockerfile syntax and base image availability
+- Verify all dependencies are in package.json/requirements.txt
+- Ensure build commands work: `npm run build`, `pip install`, etc.
+
+### Health Check Fails
+- Endpoint returns 404: Route not defined or wrong path
+- Endpoint returns 500: Application error on startup
+- Timeout: Service takes too long to start, increase `initial_delay_seconds`
+- Connection refused: Wrong port or service not listening
+
+---
+
+## Next Steps
+
+Proceed to Stage 4: Cloud deployment stages

@@ -1,0 +1,83 @@
+# Stage 5: Cloud Config
+
+**Status**: TODO
+**Prerequisites**: Database cluster online (Stage 4)
+
+---
+
+## Overview
+
+Create the application database and user, capture connection info.
+
+---
+
+## Tasks
+
+### 5.1 Create Database
+
+```bash
+doctl databases db create $DB_ID {{APP_DB_NAME}}
+```
+
+- [ ] Database created
+
+### 5.2 Create User
+
+```bash
+doctl databases user create $DB_ID {{APP_DB_USER}}
+```
+
+- [ ] User created
+- [ ] Password captured: `____________`
+
+### 5.3 Capture Connection Info
+
+```bash
+doctl databases connection $DB_ID --format Host,Port,User,Password,Database
+```
+
+---
+
+## Connection Strings
+
+| Field | Value |
+|-------|-------|
+| Host | |
+| Port | 25060 |
+| User | {{APP_DB_USER}} |
+| Password | |
+| Database | {{APP_DB_NAME}} |
+
+### Connection URL
+
+```
+DATABASE_URL=postgresql://{{APP_DB_USER}}:<PASSWORD>@<HOST>:25060/{{APP_DB_NAME}}?sslmode=require
+```
+
+---
+
+## GitHub Secret
+
+Set the database URL as a GitHub secret:
+
+```bash
+gh secret set DATABASE_URL
+# Paste the connection URL when prompted
+```
+
+- [ ] `DATABASE_URL` secret set
+
+---
+
+## Verification
+
+```bash
+# Test connection via psql
+psql "$DATABASE_URL" -c "SELECT 1"
+```
+
+---
+
+## Next Steps
+
+Proceed to Stage 6: Cloud Deploy

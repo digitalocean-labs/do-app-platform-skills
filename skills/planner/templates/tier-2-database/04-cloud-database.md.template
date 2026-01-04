@@ -1,0 +1,67 @@
+# Stage 4: Cloud Database
+
+**Status**: TODO
+**Prerequisites**: Local testing complete (Stage 3)
+
+---
+
+## Overview
+
+Create the managed PostgreSQL (or MySQL) cluster in DigitalOcean.
+
+---
+
+## Tasks
+
+### 4.1 Create Database Cluster
+
+```bash
+doctl databases create {{APP_NAME}}-postgres \
+  --engine pg \
+  --version 16 \
+  --region {{REGION}} \
+  --size db-s-1vcpu-2gb \
+  --num-nodes 1
+```
+
+- [ ] Cluster created
+- [ ] Capture cluster ID: `DB_ID=`
+
+### 4.2 Wait for Cluster
+
+```bash
+# Check status
+doctl databases list --format ID,Name,Status
+```
+
+- [ ] Status: online
+
+---
+
+## Verification
+
+| Check | Expected | Status |
+|-------|----------|--------|
+| Cluster exists | Yes | [ ] |
+| Status online | Yes | [ ] |
+
+---
+
+## Captured Values
+
+| Variable | Value |
+|----------|-------|
+| DB_ID | |
+
+---
+
+## Notes
+
+- Cluster creation takes 5-10 minutes
+- Wait for status "online" before proceeding
+
+---
+
+## Next Steps
+
+Proceed to Stage 5: Cloud Config

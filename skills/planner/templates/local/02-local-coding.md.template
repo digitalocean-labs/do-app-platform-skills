@@ -1,0 +1,60 @@
+# Stage 2: Local Coding
+
+**Status**: TODO
+**Prerequisites**: Stage 1 complete
+
+---
+
+## Overview
+
+Implement the application following the design from Stage 1.
+
+---
+
+## Tasks
+
+### 2.1 Project Setup
+- [ ] Initialize monorepo/project structure
+- [ ] Configure TypeScript/linting
+- [ ] Set up package.json scripts
+
+### 2.2 Backend Implementation
+- [ ] Implement API routes
+- [ ] Implement database models
+- [ ] Add authentication (if needed)
+
+### 2.3 Frontend Implementation
+- [ ] Create UI components
+- [ ] Implement pages/routes
+- [ ] Connect to API
+
+### 2.4 Dockerfiles & Health Checks
+
+**Greenfield**: Create these artifacts. **Brownfield**: Review and enhance existing ones.
+
+- [ ] Dockerfile exists for each service (create if missing, review if exists)
+- [ ] Each service exposes a health check endpoint (e.g., `GET /health` returns 200)
+- [ ] Verify Dockerfile builds: `docker build -t <service-name> ./<service-dir>`
+
+### 2.5 App Spec (`.do/app.yaml`)
+
+**Greenfield**: Create app spec based on services defined above. **Brownfield**: Review existing spec for correctness.
+
+- [ ] App spec exists at `.do/app.yaml` (create if missing, review if exists)
+- [ ] All services, workers, and jobs are defined
+- [ ] Health check paths match actual endpoints
+- [ ] Environment variables defined (use `${SECRET_NAME}` for secrets)
+- [ ] VPC configuration if using managed databases
+
+**Note**: The AI assistant should detect existing artifacts and adapt accordingly. The validation gate is Stage 3's `doctl app dev build` — that's what matters, not whether artifacts are new or pre-existing.
+
+---
+
+## Verification
+
+| Check | Expected | Status |
+|-------|----------|--------|
+| `npm run build` | No errors | [ ] |
+| Dockerfiles exist | All services | [ ] |
+| `.do/app.yaml` exists | Valid app spec | [ ] |
+| Health endpoints defined | Each service has `/health` | [ ] |
