@@ -6,6 +6,100 @@ Claude/Agent skills for DigitalOcean App Platform - deployment, migration, netwo
 
 Skills are structured prompts and documentation that help AI assistants (like Claude) perform specialized tasks. Each skill contains domain knowledge, best practices, code patterns, and decision trees for a specific area of App Platform.
 
+## Prerequisites
+
+Before using these skills, ensure you have:
+
+| Tool | Required | Purpose |
+|------|----------|---------|
+| **doctl** | ✅ Yes | DigitalOcean CLI for deployments and management |
+| **DO API Token** | ✅ Yes | Authentication ([create one here](https://cloud.digitalocean.com/account/api/tokens)) |
+| **git** | ✅ Yes | Clone repos, manage deployments |
+| **gh** | Optional | GitHub CLI for creating repos, PRs, workflows |
+| **docker** | Optional | Local testing, building container images |
+
+### Quick Setup
+
+```bash
+# Install doctl (macOS)
+brew install doctl
+
+# Or on Linux
+snap install doctl
+
+# Authenticate with your API token
+doctl auth init
+
+# Verify it works
+doctl account get
+```
+
+## Getting Started
+
+### Step 1: Set Up Skills Directory
+
+Create a skills directory for your AI assistant of choice:
+
+```bash
+# For Claude Code
+mkdir -p ~/.claude/skills
+
+# For Codex
+mkdir -p ~/.codex/skills
+
+# For Cursor
+mkdir -p ~/.cursor/skills
+
+# Or in your project root
+mkdir -p .claude/skills
+```
+
+### Step 2: Clone This Repository
+
+```bash
+# Clone into your skills directory
+cd ~/.claude/skills  # or your preferred location
+git clone https://github.com/bikramkgupta/do-app-platform-skills.git
+
+# Or clone into your project
+cd your-project
+git clone https://github.com/bikramkgupta/do-app-platform-skills.git .claude/skills/do-app-platform
+```
+
+### Step 3: Start Using Skills
+
+Just describe what you want and ask to use App Platform skills:
+
+```
+"I want to deploy my Python FastAPI app with PostgreSQL. Use the App Platform skills."
+
+"Migrate my Heroku app to DigitalOcean. Use App Platform skills to help."
+
+"My app is crashing on startup. Use App Platform troubleshooting skills to debug."
+```
+
+### For Complex Tasks
+
+For larger projects, ask for a detailed plan:
+
+```
+"I need to set up a multi-service architecture with API, worker, and database.
+Use App Platform skills and create a detailed plan in the /plan folder before implementing."
+```
+
+This creates structured plan files you can review before execution.
+
+## Example Prompts
+
+| What You Want | Example Prompt |
+|--------------|----------------|
+| **Create a new app** | "Create an App Spec for my Node.js API with Redis caching. Use App Platform skills." |
+| **Migrate from Heroku** | "Migrate this Heroku app to App Platform. Use the migration skill." |
+| **Troubleshoot issues** | "My database connections are timing out. Use App Platform troubleshooting to diagnose." |
+| **Set up CI/CD** | "Set up GitHub Actions to deploy on push to main. Use deployment skills." |
+| **Configure networking** | "I need custom domain with SSL and CORS headers. Use networking skills." |
+| **Database setup** | "Configure PostgreSQL with connection pooling for my Django app. Use postgres skills." |
+
 ## Available Skills
 
 | Skill | Description | Key Artifacts |
@@ -21,38 +115,17 @@ Skills are structured prompts and documentation that help AI assistants (like Cl
 | [**troubleshooting**](skills/troubleshooting/) | Debug running apps with container access | Diagnostic reports |
 | [**devcontainers**](skills/devcontainers/) | Local development with production parity | `.devcontainer/` |
 
-## Quick Start
+## Alternative Usage Methods
 
-### With Claude Code CLI
-
-```bash
-# Clone the repo
-git clone https://github.com/bikramkgupta/do-app-platform-skills.git
-
-# Reference skills in your prompts
-claude "Using the designer skill from ./do-app-platform-skills/skills/designer/SKILL.md, create an app spec for my Python API with PostgreSQL"
-```
-
-### With Claude Projects
+### With Claude Projects (claude.ai)
 
 1. Create a new Claude Project
 2. Add the relevant `SKILL.md` files to the project knowledge
 3. Start chatting about your App Platform needs
 
-### Direct Usage
+### Direct Context Injection
 
-Copy the contents of any `SKILL.md` file into your conversation with Claude as context.
-
-## Use Cases
-
-| Task | Skills to Use |
-|------|---------------|
-| Generate an App Spec from description | designer |
-| Migrate from Heroku | migration |
-| Set up subdomain routing with CORS | networking |
-| Debug database connection issues | troubleshooting, networking |
-| Configure CI/CD pipeline | deployment |
-| Set up PostgreSQL with connection pooling | postgres |
+Copy the contents of any `SKILL.md` file into your conversation with any AI assistant as context.
 
 ## Philosophy
 
