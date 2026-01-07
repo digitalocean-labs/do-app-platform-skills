@@ -2,14 +2,38 @@
 
 **CRITICAL**: AI assistants cannot use `doctl apps console` — it opens an interactive WebSocket session that requires human input. Use the `do-app-sandbox` Python package instead for programmatic shell access.
 
-## Installation & Import
+## Installation
 
-```python
-# Install: pip install do-app-sandbox
-from do_app_sandbox import Sandbox
+```bash
+# Install with uv (recommended)
+uv pip install do-app-sandbox
+
+# Or with pip
+pip install do-app-sandbox
+
+# With Spaces support for large file transfers
+pip install "do-app-sandbox[spaces]"
 ```
 
-## Quick Reference Patterns
+---
+
+## Two Use Cases (Same Package, Different Skills)
+
+The `do-app-sandbox` package serves two distinct purposes:
+
+| Use Case | SDK Method | Skill | When to Use |
+|----------|------------|-------|-------------|
+| Debug EXISTING app | `Sandbox.get_from_id()` | **troubleshooting** | App deployed, something broken |
+| Create NEW sandbox | `Sandbox.create()`, `SandboxManager` | **sandbox** | Need isolated execution environment |
+
+**Important distinction:**
+- `Sandbox.get_from_id()` connects to an app that already exists and is running
+- `Sandbox.create()` provisions a new container from scratch (~30s cold start)
+- `SandboxManager` maintains pre-warmed sandboxes for instant acquisition (~50ms)
+
+---
+
+## Troubleshooting Patterns (Debug Existing Apps)
 
 ### Connect to Any Running App Platform App
 
@@ -80,3 +104,49 @@ app.exec("./validate-infra all")
 ```
 
 → See **troubleshooting** skill for complete debug container workflows.
+
+---
+
+## Sandbox Patterns (Create New Isolated Environments)
+
+### Cold Sandbox (Single Use)
+
+```python
+from do_app_sandbox import Sandbox
+
+# Create new sandbox (~30s startup)
+sandbox = Sandbox.create(image="python", name="my-sandbox")
+
+# Execute code
+result = sandbox.exec("python3 -c 'print(2+2)'")
+print(result.stdout)
+
+# File operations
+sandbox.filesystem.write_file("/tmp/script.py", "print('hello')")
+sandbox.exec("python3 /tmp/script.py")
+
+# Clean up
+sandbox.delete()
+```
+
+### Hot Pool (Pre-warmed for AI Agents)
+
+```python
+from do_app_sandbox import SandboxManager
+
+# Initialize pool with pre-warmed sandboxes
+manager = SandboxManager(pool_size=3, image="python")
+manager.start()
+
+# Acquire instantly (~50ms)
+sandbox = manager.acquire()
+result = sandbox.exec("python3 -c 'print(42)'")
+
+# Release back to pool
+manager.release(sandbox)
+
+# Shutdown when done
+manager.shutdown()
+```
+
+→ See **sandbox** skill for complete patterns (AI code interpreter, hot pool management, Lambda comparison).
