@@ -37,6 +37,7 @@ This skill routes DigitalOcean App Platform tasks to specialized sub-skills. Eac
 |-------|---------|---------------|
 | **deployment** | Ship code to production via GitHub Actions | `.github/workflows/deploy.yml` |
 | **troubleshooting** | Debug running apps with pre-built debug container, analyze logs | Fixes, diagnostic reports |
+| **sandbox** | Isolated containers for AI agent code execution, testing | Ephemeral sandboxes |
 
 ### Data Services
 
@@ -58,18 +59,27 @@ This skill routes DigitalOcean App Platform tasks to specialized sub-skills. Eac
 
 **CRITICAL**: AI assistants cannot use `doctl apps console` — it opens an interactive WebSocket session that requires human input. Use the `do-app-sandbox` Python package instead.
 
-```python
-# Install: pip install do-app-sandbox
-from do_app_sandbox import Sandbox
+```bash
+# Install
+uv pip install do-app-sandbox  # or: pip install do-app-sandbox
+```
 
-app = Sandbox.get_from_id(app_id="your-app-id", component="component-name")
-result = app.exec("command-here")
-print(result.stdout)
+### Two Use Cases (Same Package, Different Skills)
+
+| Use Case | SDK Method | Skill |
+|----------|------------|-------|
+| Debug EXISTING app | `Sandbox.get_from_id(app_id, component)` | **troubleshooting** |
+| Create NEW sandbox | `Sandbox.create()`, `SandboxManager` | **sandbox** |
+
+```python
+# Debug existing app (troubleshooting skill)
+app = Sandbox.get_from_id(app_id="your-app-id", component="web")
+
+# Create new isolated sandbox (sandbox skill)
+sandbox = Sandbox.create(image="python")
 ```
 
 **Full guide**: See [shared/console-sdk-patterns.md](shared/console-sdk-patterns.md)
-
-→ See **troubleshooting** skill for complete debug container workflows.
 
 ---
 
@@ -126,6 +136,17 @@ print(result.stdout)
                               │
                               ▼
                 ┌─────────────────────────┐
+                │ Need isolated execution?│
+                └─────────────────────────┘
+                              │
+                      "sandbox" / "isolated" / "execute code" / "code interpreter"
+                              ▼
+                      ┌───────────┐
+                      │  sandbox  │
+                      └───────────┘
+                              │
+                              ▼
+                ┌─────────────────────────┐
                 │ Configuring data?       │
                 └─────────────────────────┘
                       │           │           │
@@ -166,6 +187,7 @@ print(result.stdout)
 | **Brownfield** | "Deploy my existing app" | planner → deployment |
 | **Enhancement** | "Add Kafka to my app" | managed-db-services → update app.yaml → deployment |
 | **Troubleshooting** | "My app is broken" | troubleshooting (standalone) |
+| **AI Agent Execution** | "Run code in isolation" | sandbox (standalone) |
 | **Specific Task** | "Set up PostgreSQL" | postgres (standalone) |
 
 ### Chaining Logic
@@ -238,6 +260,7 @@ print(result.stdout)
 | planner | "create a plan", "plan this project", "staged approach", "plan deployment", "how should I deploy" |
 | deployment | "deploy", "ship", "release", "GitHub Actions", "CI/CD" |
 | troubleshooting | "broken", "failing", "debug", "logs", "502", "crash", "error" |
+| sandbox | "sandbox", "isolated environment", "execute code", "code interpreter", "run untrusted code", "agent execution", "hot pool" |
 | postgres | "postgres", "postgresql", "schema isolation", "multi-tenant database" |
 | managed-db-services | "mysql", "mongodb", "mongo", "valkey", "redis", "kafka", "opensearch" |
 | spaces | "object storage", "S3", "Spaces", "file upload", "bucket" |
@@ -329,6 +352,7 @@ When a skill completes, it should:
 | migration | filesystem, doctl, git, python | gh, DigitalOcean MCP |
 | deployment | filesystem, doctl, git, python | gh, GitHub MCP |
 | troubleshooting | filesystem, python, doctl | — |
+| sandbox | filesystem, python, doctl | — |
 | postgres | filesystem, psql | — (scripts only) |
 | managed-db-services | filesystem, doctl | — |
 | spaces | filesystem | s3cmd (for bucket ops; doctl only manages keys) |
@@ -349,6 +373,7 @@ app-platform-skills/
 │   ├── planner/SKILL.md                  # Staged project plans (design to deployment)
 │   │   └── templates/                    # Local + Tier 1, 2, 3 stage templates
 │   ├── troubleshooting/SKILL.md
+│   ├── sandbox/SKILL.md                  # Isolated containers for AI agent execution
 │   ├── postgres/SKILL.md
 │   ├── managed-db-services/SKILL.md      # MySQL, MongoDB, Valkey, Kafka, OpenSearch
 │   ├── spaces/SKILL.md
