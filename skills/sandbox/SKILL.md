@@ -111,25 +111,33 @@ sandbox.delete()
 Pre-warmed sandboxes for instant acquisition (~50ms):
 
 ```python
-from do_app_sandbox import SandboxManager
+import asyncio
+from do_app_sandbox import SandboxManager, PoolConfig
 
-# Initialize pool with 3 pre-warmed sandboxes
-manager = SandboxManager(pool_size=3, image="python")
-manager.start()
+async def main():
+    # Configure pool with 3 pre-warmed sandboxes
+    manager = SandboxManager(
+        pools={"python": PoolConfig(target_ready=3)},
+    )
+    await manager.start()
 
-# Acquire sandbox instantly
-sandbox = manager.acquire()
+    # Acquire sandbox instantly (~50ms from pool)
+    sandbox = await manager.acquire(image="python")
 
-# Use it
-result = sandbox.exec("pip install pandas && python3 -c 'import pandas; print(pandas.__version__)'")
-print(result.stdout)
+    # Use it
+    result = sandbox.exec("python3 -c 'print(2+2)'")
+    print(result.stdout)
 
-# Release back to pool (or delete if exhausted)
-manager.release(sandbox)
+    # DELETE when done - sandboxes are single-use!
+    sandbox.delete()
 
-# Shutdown pool when done
-manager.shutdown()
+    # Shutdown pool when done
+    await manager.shutdown()
+
+asyncio.run(main())
 ```
+
+**Key point:** Sandboxes are single-use. Always `delete()` when done. The pool auto-replenishes with new sandboxes.
 
 **Full guide**: See [hot-pool.md](reference/hot-pool.md)
 
@@ -140,7 +148,7 @@ manager.shutdown()
 | Scenario | Recommendation |
 |----------|----------------|
 | AI code interpreter | Hot Pool (instant response) |
-| Multi-step agent workflow | Hot Pool (state persists) |
+| Multi-step agent workflow | Single sandbox (state persists within one sandbox) |
 | One-off script test | Cold Sandbox (simple) |
 | CI integration testing | Cold Sandbox (per-job) |
 | Short tasks (< 30s) | Consider Lambda instead |
@@ -164,16 +172,16 @@ Custom images supported — any Docker image with HTTP server capability.
 | Method | Purpose |
 |--------|---------|
 | `Sandbox.create()` | Create new sandbox (cold) |
-| `Sandbox.get_from_id()` | Connect to existing app (troubleshooting) |
+| `Sandbox.get_from_id()` | Connect to existing app |
 | `sandbox.exec(cmd)` | Run shell command |
 | `sandbox.filesystem.read_file()` | Read file contents |
 | `sandbox.filesystem.write_file()` | Write file |
 | `sandbox.filesystem.list_dir()` | List directory |
-| `sandbox.delete()` | Clean up sandbox |
-| `SandboxManager.start()` | Initialize hot pool |
-| `SandboxManager.acquire()` | Get sandbox from pool |
-| `SandboxManager.release()` | Return sandbox to pool |
-| `SandboxManager.shutdown()` | Tear down pool |
+| `sandbox.delete()` | Delete sandbox (always call when done) |
+| `SandboxManager(pools={...})` | Configure hot pool |
+| `manager.start()` | Initialize hot pool |
+| `manager.acquire(image=...)` | Get sandbox from pool (async) |
+| `manager.shutdown()` | Tear down pool |
 
 ---
 

@@ -70,12 +70,16 @@ sandbox.exec("python3 long_running_job.py")  # Can run indefinitely
 Lambda is stateless. If your agent needs to iterate—install a package, run code, check results, modify, repeat—Lambda forces serialize/deserialize between invocations.
 
 ```python
-# Sandbox: State persists naturally
+# Sandbox: State persists within one sandbox session
+sandbox = Sandbox.create(image="python")
 sandbox.exec("pip install pandas")  # Installed
 sandbox.exec("python3 -c 'import pandas'")  # Still there
 sandbox.exec("echo 'data' > /tmp/file.txt")  # File persists
 sandbox.exec("cat /tmp/file.txt")  # Can read it later
+sandbox.delete()  # Always delete when done
 ```
+
+**Note:** State persists within a single sandbox's lifetime. Sandboxes are single-use—once deleted, state is gone. Hot pools provide fast acquisition of *new* sandboxes, not state reuse.
 
 ### Interactive/Iterative Workflows
 
