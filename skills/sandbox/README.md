@@ -4,8 +4,8 @@ Create and manage isolated container environments on DigitalOcean App Platform f
 
 ## What This Skill Does
 
-- Creates ephemeral sandbox containers for running untrusted code
-- Manages hot pools of pre-warmed sandboxes for low-latency execution
+- Creates ephemeral, single-use sandbox containers for running untrusted code
+- Manages hot pools of pre-warmed sandboxes for instant acquisition (~50ms vs ~30s cold start)
 - Provides SDK patterns for AI agent workflows (code interpreters, iterative development)
 
 ## When to Use This Skill

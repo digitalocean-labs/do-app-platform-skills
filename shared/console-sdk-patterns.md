@@ -132,21 +132,29 @@ sandbox.delete()
 ### Hot Pool (Pre-warmed for AI Agents)
 
 ```python
-from do_app_sandbox import SandboxManager
+import asyncio
+from do_app_sandbox import SandboxManager, PoolConfig
 
-# Initialize pool with pre-warmed sandboxes
-manager = SandboxManager(pool_size=3, image="python")
-manager.start()
+async def main():
+    # Configure pool with pre-warmed sandboxes
+    manager = SandboxManager(
+        pools={"python": PoolConfig(target_ready=3)},
+    )
+    await manager.start()
 
-# Acquire instantly (~50ms)
-sandbox = manager.acquire()
-result = sandbox.exec("python3 -c 'print(42)'")
+    # Acquire instantly (~50ms)
+    sandbox = await manager.acquire(image="python")
+    result = sandbox.exec("python3 -c 'print(42)'")
 
-# Release back to pool
-manager.release(sandbox)
+    # DELETE when done - sandboxes are single-use!
+    sandbox.delete()
 
-# Shutdown when done
-manager.shutdown()
+    # Shutdown when done
+    await manager.shutdown()
+
+asyncio.run(main())
 ```
+
+**Note:** Sandboxes are single-use. Always call `delete()` when done. The pool auto-replenishes with new sandboxes.
 
 → See **sandbox** skill for complete patterns (AI code interpreter, hot pool management, Lambda comparison).

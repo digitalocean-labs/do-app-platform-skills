@@ -9,18 +9,27 @@ Practical patterns for common sandbox applications.
 The primary use case: execute user-submitted code safely in isolation.
 
 ```python
-from do_app_sandbox import SandboxManager
-import json
+import asyncio
+from do_app_sandbox import SandboxManager, PoolConfig
 
 class AICodeInterpreter:
     """Sandbox-backed code execution for AI agents."""
 
     def __init__(self):
-        self.manager = SandboxManager(pool_size=2, image="python")
-        self.manager.start()
+        self.manager = SandboxManager(
+            pools={"python": PoolConfig(target_ready=2)},
+        )
+        self._started = False
 
-    def run(self, code: str, packages: list[str] = None) -> dict:
-        sandbox = self.manager.acquire()
+    async def start(self):
+        await self.manager.start()
+        self._started = True
+
+    async def run(self, code: str, packages: list[str] = None) -> dict:
+        if not self._started:
+            await self.start()
+
+        sandbox = await self.manager.acquire(image="python")
         try:
             # Install requested packages
             if packages:
@@ -38,42 +47,50 @@ class AICodeInterpreter:
                 "exit_code": result.exit_code
             }
         finally:
-            self.manager.release(sandbox)
+            sandbox.delete()  # Sandboxes are single-use!
 
-    def shutdown(self):
-        self.manager.shutdown()
+    async def shutdown(self):
+        await self.manager.shutdown()
 
 # Integration with LLM
-interpreter = AICodeInterpreter()
+async def main():
+    interpreter = AICodeInterpreter()
+    await interpreter.start()
 
-# Agent decides to run code
-response = interpreter.run(
-    code="import pandas as pd; print(pd.DataFrame({'a': [1,2,3]}))",
-    packages=["pandas"]
-)
-print(response["stdout"])
+    # Agent decides to run code
+    response = await interpreter.run(
+        code="import pandas as pd; print(pd.DataFrame({'a': [1,2,3]}))",
+        packages=["pandas"]
+    )
+    print(response["stdout"])
+
+    await interpreter.shutdown()
+
+asyncio.run(main())
 ```
 
 ---
 
 ## Multi-Step Agent Workflow
 
-Agent that iteratively develops and tests code:
+For workflows requiring state persistence across multiple steps, use a **single sandbox** for the entire session:
 
 ```python
-from do_app_sandbox import SandboxManager
+from do_app_sandbox import Sandbox
 
 class IterativeAgent:
-    """Agent that can modify and re-run code based on results."""
+    """Agent that can modify and re-run code based on results.
+
+    Uses a single sandbox for the session to preserve state.
+    State persists WITHIN the sandbox, not across sandboxes.
+    """
 
     def __init__(self):
-        self.manager = SandboxManager(pool_size=1, image="python")
-        self.manager.start()
         self.sandbox = None
 
     def start_session(self):
-        """Acquire a sandbox for the entire session."""
-        self.sandbox = self.manager.acquire()
+        """Create a sandbox for the entire session."""
+        self.sandbox = Sandbox.create(image="python")
 
     def run_code(self, code: str) -> dict:
         """Execute code, preserving state from previous runs."""
@@ -95,13 +112,10 @@ class IterativeAgent:
         return self.sandbox.filesystem.read_file(path)
 
     def end_session(self):
-        """Release sandbox back to pool."""
+        """Delete sandbox when done."""
         if self.sandbox:
-            self.manager.release(self.sandbox)
+            self.sandbox.delete()
             self.sandbox = None
-
-    def shutdown(self):
-        self.manager.shutdown()
 
 # Usage: Agent maintains state across multiple interactions
 agent = IterativeAgent()
@@ -116,7 +130,7 @@ with open('/tmp/state.json', 'w') as f:
 print('Data saved')
 """)
 
-# Second interaction: read and modify
+# Second interaction: read and modify (state persists within sandbox!)
 agent.run_code("""
 import json
 with open('/tmp/state.json') as f:
@@ -126,8 +140,7 @@ data['value'] *= 2
 print(f"Updated value: {data['value']}")
 """)
 
-agent.end_session()
-agent.shutdown()
+agent.end_session()  # Deletes the sandbox
 ```
 
 ---
@@ -195,16 +208,16 @@ print('PASS')
 
 ## Batch Processing
 
-Process multiple items with sandbox pool:
+Process multiple items using the hot pool for speed:
 
 ```python
-from do_app_sandbox import SandboxManager
-from concurrent.futures import ThreadPoolExecutor
+import asyncio
 import json
+from do_app_sandbox import SandboxManager, PoolConfig
 
-def process_item(manager, item):
+async def process_item(manager, item):
     """Process a single item in a sandbox."""
-    sandbox = manager.acquire()
+    sandbox = await manager.acquire(image="python")
     try:
         sandbox.filesystem.write_file("/tmp/input.json", json.dumps(item))
         sandbox.filesystem.write_file("/tmp/process.py", """
@@ -217,22 +230,25 @@ print(json.dumps(result))
         result = sandbox.exec("python3 /tmp/process.py")
         return json.loads(result.stdout)
     finally:
-        manager.release(sandbox)
+        sandbox.delete()  # Always delete - sandboxes are single-use!
 
-# Process batch
-items = [{"id": i, "value": i * 10} for i in range(10)]
+async def main():
+    # Process batch
+    items = [{"id": i, "value": i * 10} for i in range(10)]
 
-manager = SandboxManager(pool_size=3, image="python")
-manager.start()
+    manager = SandboxManager(
+        pools={"python": PoolConfig(target_ready=3)},
+    )
+    await manager.start()
 
-with ThreadPoolExecutor(max_workers=3) as executor:
-    results = list(executor.map(
-        lambda item: process_item(manager, item),
-        items
-    ))
+    # Process items concurrently
+    tasks = [process_item(manager, item) for item in items]
+    results = await asyncio.gather(*tasks)
 
-print(results)
-manager.shutdown()
+    print(results)
+    await manager.shutdown()
+
+asyncio.run(main())
 ```
 
 ---
@@ -249,7 +265,7 @@ def create_analysis_environment():
     sandbox = Sandbox.create(image="python", instance_size="apps-s-1vcpu-2gb")
 
     # Install analysis packages
-    sandbox.exec("pip install pandas numpy matplotlib seaborn scikit-learn jupyter")
+    sandbox.exec("pip install pandas numpy matplotlib seaborn scikit-learn")
 
     return sandbox
 
@@ -293,5 +309,21 @@ print('Analysis complete')
 
 # Download generated plot
 sandbox.filesystem.download_file("/tmp/plot.png", "./local_plot.png")
+
+# Clean up when done with analysis session
 sandbox.delete()
 ```
+
+---
+
+## Key Pattern Summary
+
+| Pattern | Sandbox Type | Lifecycle |
+|---------|-------------|-----------|
+| Code Interpreter | Hot Pool | acquire → exec → delete (per request) |
+| Multi-step workflow | Cold Sandbox | create once → multiple execs → delete |
+| Integration tests | Cold Sandbox | create → test → delete (per test) |
+| Batch processing | Hot Pool | acquire → process → delete (per item) |
+| Data analysis | Cold Sandbox | create → long session → delete |
+
+**Remember:** Sandboxes are single-use. Always call `delete()` when done.
