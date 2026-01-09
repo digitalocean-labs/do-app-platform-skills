@@ -1,24 +1,30 @@
 # Hot Pool Reference
 
-Use `SandboxManager` to maintain pre-warmed sandboxes for instant acquisition (~50ms vs ~30s cold start).
+Use `SandboxManager` to maintain pre-warmed sandboxes for instant acquisition (~500ms vs ~30s cold start).
 
-## Key Concept: Sandboxes Are Single-Use
+## Ownership Model
 
-**Critical understanding:** Sandboxes are ephemeral, single-use containers.
+**Critical understanding:** Once you acquire a sandbox, YOU own it.
+
+| State | Owned By | On `shutdown()` |
+|-------|----------|-----------------|
+| **Ready** (in pool) | Pool | Destroyed |
+| **Creating** (in-flight) | Pool | Destroyed |
+| **Acquired** (in use) | **You** | NOT touched |
 
 ```
 Pool maintains N pre-warmed sandboxes
        ↓
-acquire() → You get a sandbox (removed from pool)
+acquire() → Sandbox removed from pool, now YOURS
        ↓
 Use it (exec commands, file ops, etc.)
        ↓
-delete() → Sandbox destroyed permanently
+delete() → YOUR responsibility to clean up
        ↓
 Pool auto-replenishes with NEW sandboxes
 ```
 
-There is **no recycling**. You cannot "return" a sandbox to the pool. Always `delete()` when done.
+There is **no recycling**. You cannot "return" a sandbox to the pool. Always call `sandbox.delete()` when done.
 
 ---
 
@@ -32,34 +38,39 @@ For one-off executions where startup time doesn't matter, use [Cold Sandbox](col
 
 ---
 
-## Basic Pool Lifecycle
+## Basic Pool Lifecycle (Golden Pattern)
 
 ```python
 import asyncio
 from do_app_sandbox import SandboxManager, PoolConfig
 
 async def main():
-    # 1. Configure and start pool
+    # 1. Configure pool
     manager = SandboxManager(
         pools={"python": PoolConfig(target_ready=3)},
     )
-    await manager.start()
 
-    # 2. Acquire sandbox instantly (~50ms)
+    # 2. Start and warm up (blocks until pool is ready)
+    await manager.start()
+    await manager.warm_up(timeout=180)
+
+    # 3. Acquire instantly (~500ms from pool vs 30s cold start)
     sandbox = await manager.acquire(image="python")
 
-    # 3. Use it
+    # 4. Use it
     result = sandbox.exec("python3 -c 'print(2+2)'")
     print(result.stdout)
 
-    # 4. DELETE when done - sandboxes are single-use!
+    # 5. Delete when done - YOUR responsibility!
     sandbox.delete()
 
-    # 5. Shutdown pool (destroys remaining warm sandboxes)
+    # 6. Shutdown (cleans up pool, not acquired sandboxes)
     await manager.shutdown()
 
 asyncio.run(main())
 ```
+
+**Reference test:** See `tests/test_pool_basic_integration.py` for a complete working example.
 
 ---
 
@@ -142,7 +153,7 @@ try:
     result = sandbox.exec("python3 script.py")
     # Process result
 finally:
-    sandbox.delete()  # Always delete!
+    sandbox.delete()  # YOUR responsibility!
 ```
 
 ### Context Manager (Recommended)
@@ -264,6 +275,7 @@ class CodeInterpreter:
 
     async def start(self):
         await self.manager.start()
+        await self.manager.warm_up(timeout=180)  # Wait for pool to be ready
         self._started = True
 
     async def execute(self, code: str) -> dict:
@@ -284,7 +296,7 @@ class CodeInterpreter:
                 "error": result.stderr if result.exit_code != 0 else None
             }
         finally:
-            sandbox.delete()  # Always delete - single use!
+            sandbox.delete()  # YOUR responsibility!
 
     async def shutdown(self):
         await self.manager.shutdown()
@@ -399,7 +411,7 @@ async def run_agent_system():
             result = sandbox.exec(f"python /app/run_task.py {task.id}")
             return result
         finally:
-            sandbox.delete()  # Single-use: always delete
+            sandbox.delete()  # YOUR responsibility!
 
     # ... run your agent system ...
 

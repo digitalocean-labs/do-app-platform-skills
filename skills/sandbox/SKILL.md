@@ -108,36 +108,37 @@ sandbox.delete()
 
 ## Quick Start: Hot Pool
 
-Pre-warmed sandboxes for instant acquisition (~50ms):
+Pre-warmed sandboxes for instant acquisition:
 
 ```python
 import asyncio
 from do_app_sandbox import SandboxManager, PoolConfig
 
 async def main():
-    # Configure pool with 3 pre-warmed sandboxes
+    # 1. Configure pool
     manager = SandboxManager(
         pools={"python": PoolConfig(target_ready=3)},
     )
+
+    # 2. Start and warm up (blocks until pool is ready)
     await manager.start()
+    await manager.warm_up(timeout=180)
 
-    # Acquire sandbox instantly (~50ms from pool)
+    # 3. Acquire instantly (~500ms from pool vs 30s cold start)
     sandbox = await manager.acquire(image="python")
-
-    # Use it
     result = sandbox.exec("python3 -c 'print(2+2)'")
     print(result.stdout)
 
-    # DELETE when done - sandboxes are single-use!
+    # 4. Delete when done - YOUR responsibility!
     sandbox.delete()
 
-    # Shutdown pool when done
+    # 5. Shutdown (cleans up pool, not acquired sandboxes)
     await manager.shutdown()
 
 asyncio.run(main())
 ```
 
-**Key point:** Sandboxes are single-use. Always `delete()` when done. The pool auto-replenishes with new sandboxes.
+**Ownership model:** Once you `acquire()` a sandbox, you own it. Always call `sandbox.delete()` when done. The `shutdown()` only cleans up sandboxes still in the pool.
 
 **Full guide**: See [hot-pool.md](reference/hot-pool.md)
 
@@ -179,9 +180,10 @@ Custom images supported — any Docker image with HTTP server capability.
 | `sandbox.filesystem.list_dir()` | List directory |
 | `sandbox.delete()` | Delete sandbox (always call when done) |
 | `SandboxManager(pools={...})` | Configure hot pool |
-| `manager.start()` | Initialize hot pool |
+| `manager.start()` | Start background pool management |
+| `manager.warm_up(timeout)` | Block until pool reaches target (async) |
 | `manager.acquire(image=...)` | Get sandbox from pool (async) |
-| `manager.shutdown()` | Tear down pool |
+| `manager.shutdown()` | Tear down pool (cleans up pool only) |
 
 ---
 
