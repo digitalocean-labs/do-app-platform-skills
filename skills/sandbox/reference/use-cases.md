@@ -71,6 +71,79 @@ asyncio.run(main())
 
 ---
 
+## Streaming AI Code Interpreter
+
+For real-time output display, use Service mode with `exec_stream()`:
+
+```python
+import asyncio
+from do_app_sandbox import Sandbox, SandboxMode, SandboxManager, PoolConfig
+
+class StreamingCodeInterpreter:
+    """Code interpreter with real-time output streaming."""
+
+    def __init__(self):
+        self.manager = SandboxManager(
+            pools={"python": PoolConfig(target_ready=2)},
+            sandbox_defaults={"mode": SandboxMode.SERVICE},
+        )
+
+    async def start(self):
+        await self.manager.start()
+
+    async def run_streaming(self, code: str, on_output):
+        """Execute code and stream output to callback.
+
+        Args:
+            code: Python code to execute
+            on_output: Callback function(data: str) for real-time output
+        """
+        sandbox = await self.manager.acquire(image="python")
+        try:
+            sandbox.filesystem.write_file("/tmp/code.py", code)
+
+            exit_code = None
+            for event in sandbox.exec_stream("python3 /tmp/code.py"):
+                if event.type in ("stdout", "stderr"):
+                    on_output(event.data)
+                elif event.type == "exit":
+                    exit_code = int(event.data)
+
+            return {"success": exit_code == 0, "exit_code": exit_code}
+        finally:
+            sandbox.delete()
+
+    async def shutdown(self):
+        await self.manager.shutdown()
+
+
+# Usage with real-time output
+async def main():
+    interpreter = StreamingCodeInterpreter()
+    await interpreter.start()
+
+    # Output streams to user in real-time
+    def print_output(data):
+        print(data, end="", flush=True)
+
+    result = await interpreter.run_streaming(
+        code="""
+import time
+for i in range(5):
+    print(f"Step {i+1}/5...")
+    time.sleep(1)
+print("Done!")
+""",
+        on_output=print_output
+    )
+
+    await interpreter.shutdown()
+
+asyncio.run(main())
+```
+
+---
+
 ## Multi-Step Agent Workflow
 
 For workflows requiring state persistence across multiple steps, use a **single sandbox** for the entire session:
@@ -318,12 +391,13 @@ sandbox.delete()
 
 ## Key Pattern Summary
 
-| Pattern | Sandbox Type | Lifecycle |
-|---------|-------------|-----------|
-| Code Interpreter | Hot Pool | acquire → exec → delete (per request) |
-| Multi-step workflow | Cold Sandbox | create once → multiple execs → delete |
-| Integration tests | Cold Sandbox | create → test → delete (per test) |
-| Batch processing | Hot Pool | acquire → process → delete (per item) |
-| Data analysis | Cold Sandbox | create → long session → delete |
+| Pattern | Sandbox Type | Mode | Lifecycle |
+|---------|-------------|------|-----------|
+| Code Interpreter | Hot Pool | WORKER | acquire → exec → delete (per request) |
+| Streaming Interpreter | Hot Pool | SERVICE | acquire → exec_stream → delete (per request) |
+| Multi-step workflow | Cold Sandbox | WORKER | create once → multiple execs → delete |
+| Integration tests | Cold Sandbox | WORKER | create → test → delete (per test) |
+| Batch processing | Hot Pool | WORKER | acquire → process → delete (per item) |
+| Data analysis | Cold Sandbox | WORKER | create → long session → delete |
 
 **Remember:** Sandboxes are single-use. Always call `delete()` when done.

@@ -32,23 +32,33 @@ install packages, run code, check results, modify, repeat.
             │                               │
             ▼                               ▼
    ┌─────────────────┐           ┌─────────────────┐
-   │ troubleshooting │           │ Continue here   │
-   │ skill           │           │                 │
-   │                 │           │ Is low latency  │
-   │ Sandbox.get_    │           │ critical?       │
-   │ from_id()       │           │                 │
-   └─────────────────┘           └────────┬────────┘
-                                          │
+   │ troubleshooting │           │ Need real-time  │
+   │ skill           │           │ streaming or    │
+   │                 │           │ port exposure?  │
+   │ Sandbox.get_    │           │                 │
+   │ from_id()       │           └────────┬────────┘
+   └─────────────────┘                    │
                           ┌───────────────┴───────────────┐
                           │                               │
                          YES                              NO
                           │                               │
                           ▼                               ▼
                  ┌─────────────────┐           ┌─────────────────┐
-                 │ HOT POOL        │           │ COLD SANDBOX    │
-                 │ SandboxManager  │           │ Sandbox.create()│
-                 │ ~50ms acquire   │           │ ~30s startup    │
-                 └─────────────────┘           └─────────────────┘
+                 │ SERVICE MODE    │           │ Is low latency  │
+                 │ exec_stream()   │           │ critical?       │
+                 │ expose_port()   │           │                 │
+                 └─────────────────┘           └────────┬────────┘
+                                                        │
+                                        ┌───────────────┴───────────────┐
+                                        │                               │
+                                       YES                              NO
+                                        │                               │
+                                        ▼                               ▼
+                               ┌─────────────────┐           ┌─────────────────┐
+                               │ HOT POOL        │           │ COLD SANDBOX    │
+                               │ SandboxManager  │           │ Sandbox.create()│
+                               │ ~50ms acquire   │           │ ~30s startup    │
+                               └─────────────────┘           └─────────────────┘
 ```
 
 ---
@@ -161,8 +171,10 @@ asyncio.run(main())
 
 | Image | Registry | Use Case |
 |-------|----------|----------|
-| `python` | `ghcr.io/bikramkgupta/sandbox-python` | Python 3.12, pip, common libs |
-| `node` | `ghcr.io/bikramkgupta/sandbox-node` | Node.js LTS, npm |
+| `python` | `ghcr.io/bikramkgupta/sandbox-python` | Python 3.13, uv, pip |
+| `node` | `ghcr.io/bikramkgupta/sandbox-node` | Node.js 24, nvm |
+
+Working directory: `/home/sandbox/app` (with `/app` symlink). Ports: 8080 (user apps), 9090 (health checks).
 
 Custom images supported — any Docker image with HTTP server capability.
 
@@ -172,17 +184,21 @@ Custom images supported — any Docker image with HTTP server capability.
 
 | Method | Purpose |
 |--------|---------|
-| `Sandbox.create()` | Create new sandbox (cold) |
+| `Sandbox.create(image, mode=...)` | Create sandbox (WORKER or SERVICE mode) |
 | `Sandbox.get_from_id()` | Connect to existing app |
 | `sandbox.exec(cmd)` | Run shell command |
+| `sandbox.exec_stream(cmd)` | Streaming output (SERVICE mode) |
+| `sandbox.expose_port(port)` | Get public URL for port (SERVICE mode) |
+| `sandbox.hibernate()` | Snapshot + delete for cost savings |
+| `Sandbox.wake(hibernated)` | Restore hibernated sandbox |
 | `sandbox.filesystem.read_file()` | Read file contents |
 | `sandbox.filesystem.write_file()` | Write file |
-| `sandbox.filesystem.list_dir()` | List directory |
 | `sandbox.delete()` | Delete sandbox (always call when done) |
 | `SandboxManager(pools={...})` | Configure hot pool |
 | `manager.start()` | Start background pool management |
 | `manager.warm_up(timeout)` | Block until pool reaches target (async) |
 | `manager.acquire(image=...)` | Get sandbox from pool (async) |
+| `manager.acquire_with_snapshot()` | Get sandbox with pre-configured state |
 | `manager.shutdown()` | Tear down pool (cleans up pool only) |
 
 ---
@@ -191,6 +207,7 @@ Custom images supported — any Docker image with HTTP server capability.
 
 - **[cold-sandbox.md](reference/cold-sandbox.md)** — Single sandbox lifecycle, file ops, cleanup
 - **[hot-pool.md](reference/hot-pool.md)** — Pool management, sizing, cost optimization
+- **[service-mode.md](reference/service-mode.md)** — Streaming, port exposure, AI agent patterns
 - **[use-cases.md](reference/use-cases.md)** — AI agent patterns, testing patterns
 - **[positioning.md](reference/positioning.md)** — Lambda vs Sandbox decision guide
 

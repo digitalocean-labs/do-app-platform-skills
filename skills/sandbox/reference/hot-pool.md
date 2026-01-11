@@ -194,6 +194,58 @@ With `on_empty="create"` (default), the manager falls back to cold creation (~30
 
 ---
 
+## Snapshot-Based Acquisition
+
+Restore sandboxes with pre-installed dependencies from snapshots:
+
+### Create Snapshot (One-Time Setup)
+
+```python
+# Create a golden snapshot with common packages
+sandbox = await manager.acquire(image="python")
+sandbox.exec("pip install pandas numpy scikit-learn requests")
+sandbox.exec("pip install transformers torch")
+
+# Save snapshot for reuse
+meta = sandbox.create_snapshot(
+    snapshot_id="ml-environment-v1",
+    description="ML packages pre-installed"
+)
+print(f"Saved: {meta.snapshot_id}")
+sandbox.delete()
+```
+
+### Acquire with Snapshot
+
+```python
+# Get sandbox with snapshot restored (~5-15s faster than installing)
+sandbox = await manager.acquire_with_snapshot(
+    image="python",
+    snapshot_id="ml-environment-v1"
+)
+
+# Packages already installed
+result = sandbox.exec("python3 -c 'import pandas; print(pandas.__version__)'")
+print(result.stdout)
+
+sandbox.delete()
+```
+
+### Wake Hibernated Sandbox
+
+For resuming a specific hibernated session (not a generic snapshot):
+
+```python
+# Resume a hibernated sandbox through the pool (faster)
+sandbox = await manager.wake_hibernated(hibernated)
+
+# State is restored
+result = sandbox.exec("ls -la /workspace")
+sandbox.delete()
+```
+
+---
+
 ## Adaptive Scaling
 
 Pools automatically scale based on demand:
