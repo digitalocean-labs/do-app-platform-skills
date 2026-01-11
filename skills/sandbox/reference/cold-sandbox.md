@@ -41,11 +41,14 @@ sandbox.delete()
 ## Create Options
 
 ```python
+from do_app_sandbox import Sandbox, SandboxMode
+
 sandbox = Sandbox.create(
     image="python",              # Required: "python" or "node"
     name="my-sandbox",           # Optional: custom name
-    region="nyc",                # Optional: default nyc
-    instance_size="apps-s-1vcpu-1gb"  # Optional: instance size
+    region="nyc",                # Optional: default atl1
+    instance_size="apps-s-1vcpu-1gb",  # Optional: instance size
+    mode=SandboxMode.WORKER      # Optional: WORKER (default) or SERVICE
 )
 ```
 
@@ -53,8 +56,13 @@ sandbox = Sandbox.create(
 |-----------|----------|---------|---------|
 | `image` | Yes | — | `"python"`, `"node"` |
 | `name` | No | auto-generated | any string |
-| `region` | No | `"nyc"` | `nyc`, `sfo`, `ams`, `sgp`, etc. |
+| `region` | No | `"atl1"` | `atl1`, `nyc`, `sfo`, `ams`, `sgp`, etc. |
 | `instance_size` | No | `apps-s-1vcpu-1gb` | see instance-sizes.yaml |
+| `mode` | No | `SandboxMode.WORKER` | `WORKER` or `SERVICE` |
+
+**Mode selection:**
+- `WORKER` — Default. Uses doctl console. Simple command execution.
+- `SERVICE` — HTTP API with SSE streaming, port exposure. See [service-mode.md](service-mode.md).
 
 ---
 
@@ -218,4 +226,50 @@ print(json.dumps(result))
 result = sandbox.exec("python3 /tmp/analyze.py")
 data = json.loads(result.stdout)
 print(data["count"])  # 42
+```
+
+---
+
+## Hibernation
+
+Snapshot sandbox state and delete to save costs. Wake later to restore.
+
+**Cost comparison:**
+- Running sandbox: ~$5/month
+- Hibernated (Spaces storage): ~$0.02/month
+
+Requires DO Spaces for snapshot storage.
+
+### Hibernate
+
+```python
+from do_app_sandbox import Sandbox
+
+sandbox = Sandbox.create(
+    image="python",
+    spaces_config={"bucket": "my-bucket", "region": "nyc3"}
+)
+
+# Do work...
+sandbox.exec("pip install pandas numpy")
+
+# Hibernate: snapshot + delete
+hibernated = sandbox.hibernate()
+print(f"Snapshot: {hibernated.snapshot_id}")
+# Sandbox is now deleted, only snapshot remains
+```
+
+### Wake
+
+```python
+from do_app_sandbox import Sandbox
+
+# Later: restore from hibernation
+sandbox = Sandbox.wake(hibernated)
+
+# State is restored
+result = sandbox.exec("python3 -c 'import pandas; print(pandas.__version__)'")
+print(result.stdout)  # pandas is still installed
+
+sandbox.delete()
 ```
