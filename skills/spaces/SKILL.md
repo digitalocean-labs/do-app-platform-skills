@@ -66,7 +66,7 @@ jq --version             # JSON processor
 
 ```bash
 # Choose region closest to your App Platform app (see Regions & Endpoints below)
-export DO_SPACES_REGION="syd1"  # Options: nyc3, sfo3, ams3, sgp1, fra1, syd1
+export DO_SPACES_REGION="syd1"  # nyc3, sfo3, ams3, sgp1, lon1, fra1, tor1, blr1, syd1, atl1
 export DO_SPACES_ENDPOINT="https://${DO_SPACES_REGION}.digitaloceanspaces.com"
 
 export APP_NAME="myapp"
@@ -267,8 +267,12 @@ aws $EP s3 sync ./local-dir/ s3://myapp-uploads/prefix/
 | `sfo3` | `https://sfo3.digitaloceanspaces.com` | `sfo` |
 | `ams3` | `https://ams3.digitaloceanspaces.com` | `ams` |
 | `sgp1` | `https://sgp1.digitaloceanspaces.com` | `sgp` |
+| `lon1` | `https://lon1.digitaloceanspaces.com` | `lon` |
 | `fra1` | `https://fra1.digitaloceanspaces.com` | `fra` |
+| `tor1` | `https://tor1.digitaloceanspaces.com` | `tor` |
+| `blr1` | `https://blr1.digitaloceanspaces.com` | `blr` |
 | `syd1` | `https://syd1.digitaloceanspaces.com` | `syd` |
+| `atl1` | `https://atl1.digitaloceanspaces.com` | `atl` |
 
 > **Best practice**: Match your Spaces region to your App Platform region for lowest latency (e.g., app in `syd` → bucket in `syd1`).
 
