@@ -82,7 +82,7 @@ asyncio.run(main())
 from do_app_sandbox import PoolConfig
 
 config = PoolConfig(
-    target_ready=3,           # Target warm sandboxes when active
+    target_ready=3,           # Minimum warm sandboxes (always maintained)
     max_ready=10,             # Maximum sandboxes in pool
     idle_timeout=60,          # Seconds before scaling down
     scale_down_delay=60,      # Seconds between destructions
@@ -96,9 +96,9 @@ config = PoolConfig(
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `target_ready` | 0 | Target warm sandboxes when pool is active |
+| `target_ready` | 0 | Minimum warm sandboxes (always maintained) |
 | `max_ready` | 10 | Maximum sandboxes to keep in pool |
-| `idle_timeout` | 60 | Seconds of no acquires before scaling down |
+| `idle_timeout` | 60 | Seconds of no acquires before scaling down to `target_ready` |
 | `scale_down_delay` | 60 | Seconds between destructions during scale-down |
 | `cooldown_after_acquire` | 120 | Pause scale-down after an acquire |
 | `max_warm_age` | 1800 | Max seconds a sandbox can warm before cycling |
@@ -246,22 +246,28 @@ sandbox.delete()
 
 ---
 
-## Adaptive Scaling
+## Pool Behavior
 
-Pools automatically scale based on demand:
+The pool always maintains at least `target_ready` sandboxes:
 
 ```
-IDLE (0 warm) ←──── idle_timeout ──── ACTIVE (target_ready warm)
-      │                                        ↑
-      └──── acquire() triggers scale-up ───────┘
+Pool maintains target_ready sandboxes at all times
+       │
+acquire() → Sandbox removed from pool
+       │
+Pool auto-replenishes back to target_ready
+       │
+(pool can temporarily exceed target_ready up to max_ready during burst)
 ```
 
-**Scale-down behavior:**
-1. No acquires for `idle_timeout` seconds → start scaling down
-2. Destroy 1 sandbox every `scale_down_delay` seconds
-3. After any acquire, pause scale-down for `cooldown_after_acquire` seconds
+**Scaling behavior:**
+- Pool **never drops below `target_ready`** — this is the baseline
+- Burst traffic can grow pool up to `max_ready`
+- After `idle_timeout` seconds of no acquires, excess sandboxes (above `target_ready`) are scaled down
+- Scale-down destroys 1 sandbox every `scale_down_delay` seconds until reaching `target_ready`
+- After any acquire, scale-down is paused for `cooldown_after_acquire` seconds
 
-This prevents paying for idle sandboxes while avoiding thrashing.
+This ensures consistent low-latency acquisition while controlling costs.
 
 ---
 
