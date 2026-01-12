@@ -1,147 +1,97 @@
 ---
 name: spaces
-description: Configure DigitalOcean Spaces (S3-compatible object storage) for App Platform applications. Use when setting up file uploads, static asset hosting, CDN-backed storage, access logging, or per-app credential management.
+description: Configure DigitalOcean Spaces (S3-compatible object storage) for App Platform apps. Use when setting up file uploads, static assets, CDN, access logging, or per-app credential management.
 ---
 
 # Spaces Skill
 
-Configure DigitalOcean Spaces (S3-compatible object storage) for App Platform applications.
-
-## Philosophy
-
-**This skill covers DO-specific configuration only.** Claude already knows S3 SDK usage, presigned URL patterns, and object storage concepts.
-
-**This skill teaches:** Spaces endpoint URLs, CORS configuration, app spec patterns, CDN enablement, per-app key management, and access logging.
-
-> **Tip**: For complex multi-step projects, consider using the **planner** skill. For an overview of all skills, see the [root SKILL.md](../../SKILL.md).
-
----
+S3-compatible object storage for App Platform applications.
 
 ## Tool Separation (Critical)
 
-| Tool | Use For | NOT For |
-|------|---------|---------|
-| `doctl` | Key management (create, rotate, delete) | Bucket or object operations |
-| `aws` CLI | All bucket/object ops (create, delete, upload, list, logging) | Key management |
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  doctl: KEYS ONLY          │  aws CLI: EVERYTHING ELSE          │
+│  • doctl spaces keys create│  • Bucket create/delete            │
+│  • doctl spaces keys list  │  • Object upload/download          │
+│  • doctl spaces keys delete│  • CORS, logging, lifecycle        │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-**Why?** doctl's Spaces support is limited to key management. Bucket operations require S3-compatible tools.
+> **Why?** doctl's Spaces support is limited to key management. Bucket operations require S3-compatible tools.
 
 ---
 
-## Credential Handling
-
-### Security Model
-
-1. **One Spaces key per app** — isolate blast radius
-2. **Store secrets externally** — GitHub Secrets, Vault, or env vars
-3. **Rotate regularly** — mint new key, update app, revoke old key
-4. **Never log secrets** — keys shown once at creation
-
-### How Credentials Flow
+## Quick Decision
 
 ```
-doctl (DO API token) → Creates Spaces key
-                            ↓
-                      AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY
-                            ↓
-aws CLI (S3 API) → Bucket/object operations
+┌─────────────────────────────────────────────────────────────────┐
+│              What do you need to do with Spaces?                 │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+   Create key            Create bucket         Upload/download
+   or rotate             set CORS/logging      objects
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+│    doctl      │    │   aws CLI     │    │   aws CLI     │
+│ spaces keys   │    │   s3api       │    │   s3 cp/sync  │
+└───────────────┘    └───────────────┘    └───────────────┘
 ```
-
-Keys are account-wide. Region is determined by endpoint URL, not by the key.
 
 ---
 
-## Quick Start: Bootstrap Spaces for an App
-
-### Prerequisites
+## Prerequisites
 
 ```bash
-# Required tools
 doctl auth init          # One-time DO API auth
 aws --version            # AWS CLI v2
 jq --version             # JSON processor
 ```
 
-### Step 1: Set Environment
+---
+
+## Quick Start
+
+### 1. Set Environment
 
 ```bash
-# Choose region closest to your App Platform app (see Regions & Endpoints below)
-export DO_SPACES_REGION="syd1"  # nyc3, sfo3, ams3, sgp1, lon1, fra1, tor1, blr1, syd1, atl1
+# Choose region matching your App Platform app (see shared/regions.yaml)
+export DO_SPACES_REGION="syd1"
 export DO_SPACES_ENDPOINT="https://${DO_SPACES_REGION}.digitaloceanspaces.com"
-
 export APP_NAME="myapp"
-export SRC_BUCKET="${APP_NAME}-uploads"
-export LOG_BUCKET="${APP_NAME}-logs"
-export LOG_PREFIX="access-logs/${APP_NAME}/"
+export BUCKET="${APP_NAME}-uploads"
 export DO_SPACES_KEY_NAME="${APP_NAME}-spaces-key"
 ```
 
-### Step 2: Create Spaces Key (doctl)
+### 2. Create Key (doctl)
 
 ```bash
-# Create key and capture credentials
 KEY_JSON=$(doctl spaces keys create "${DO_SPACES_KEY_NAME}" --output json)
-
-# Extract credentials
 export AWS_ACCESS_KEY_ID=$(echo "$KEY_JSON" | jq -r '.[0].access_key')
 export AWS_SECRET_ACCESS_KEY=$(echo "$KEY_JSON" | jq -r '.[0].secret_key')
 
 # IMPORTANT: Secret shown only once - save it now!
-echo "Access Key: $AWS_ACCESS_KEY_ID"
-echo "Secret Key: $AWS_SECRET_ACCESS_KEY"
 ```
 
-### Step 3: Create Buckets (aws CLI)
+### 3. Create Bucket (aws CLI)
 
 ```bash
-# Create log bucket first (required for logging target)
-aws --endpoint-url "$DO_SPACES_ENDPOINT" s3api create-bucket --bucket "$LOG_BUCKET"
-
-# Create source bucket
-aws --endpoint-url "$DO_SPACES_ENDPOINT" s3api create-bucket --bucket "$SRC_BUCKET"
-
-# Verify
-aws --endpoint-url "$DO_SPACES_ENDPOINT" s3 ls
+aws --endpoint-url "$DO_SPACES_ENDPOINT" s3api create-bucket --bucket "$BUCKET"
 ```
 
-### Step 4: Enable Access Logging
-
-```bash
-# Create logging config
-cat > /tmp/logging.json << EOF
-{
-  "LoggingEnabled": {
-    "TargetBucket": "${LOG_BUCKET}",
-    "TargetPrefix": "${LOG_PREFIX}"
-  }
-}
-EOF
-
-# Apply to source bucket
-aws --endpoint-url "$DO_SPACES_ENDPOINT" s3api put-bucket-logging \
-  --bucket "$SRC_BUCKET" \
-  --bucket-logging-status file:///tmp/logging.json
-
-# Verify
-aws --endpoint-url "$DO_SPACES_ENDPOINT" s3api get-bucket-logging --bucket "$SRC_BUCKET"
-```
-
-### Step 5: Store Credentials
-
-Add to GitHub Secrets (Repo → Settings → Secrets → Actions):
-- `SPACES_ACCESS_KEY` → value of `$AWS_ACCESS_KEY_ID`
-- `SPACES_SECRET_KEY` → value of `$AWS_SECRET_ACCESS_KEY`
-
-### Step 6: App Spec Configuration
+### 4. App Spec
 
 ```yaml
 services:
   - name: api
     envs:
       - key: SPACES_BUCKET
-        value: myapp-uploads              # Your bucket name
+        value: myapp-uploads
       - key: SPACES_REGION
-        value: ${SPACES_REGION}           # Match your bucket's region
+        value: ${SPACES_REGION}           # Your bucket's region
       - key: SPACES_ENDPOINT
         value: ${SPACES_ENDPOINT}         # e.g., https://syd1.digitaloceanspaces.com
       - key: SPACES_ACCESS_KEY
@@ -154,114 +104,13 @@ services:
         value: ${SPACES_SECRET_KEY}
 ```
 
-> **Region selection**: Create your bucket in the same region as your App Platform app for lowest latency. See [Regions & Endpoints](#regions--endpoints) for available options.
+> Store `SPACES_ACCESS_KEY` and `SPACES_SECRET_KEY` in GitHub Secrets.
 
 ---
 
-## Scripts (AI-Friendly Automation)
+## Regions
 
-For idempotent, scriptable operations, use the provided scripts:
-
-| Script | Purpose |
-|--------|---------|
-| `scripts/bootstrap_app_spaces.sh` | Full setup: key + buckets + logging |
-| `scripts/enable_bucket_logging.sh` | Enable/verify logging (idempotent) |
-| `scripts/view_access_logs.sh` | List/download access logs |
-| `scripts/rotate_spaces_key.sh` | Rotate credentials safely |
-
-### Usage Example
-
-```bash
-# Set required env vars (see Quick Start Step 1)
-export DO_SPACES_REGION="syd1"  # Your chosen region
-export DO_SPACES_ENDPOINT="https://${DO_SPACES_REGION}.digitaloceanspaces.com"
-export APP_NAME="myapp"
-export SRC_BUCKET="${APP_NAME}-uploads"
-export LOG_BUCKET="${APP_NAME}-logs"
-export LOG_PREFIX="access-logs/${APP_NAME}/"
-export DO_SPACES_KEY_NAME="${APP_NAME}-spaces-key"
-
-# Bootstrap everything
-./scripts/bootstrap_app_spaces.sh
-
-# Later: view logs
-./scripts/view_access_logs.sh --tail 50
-
-# Rotate key when needed
-./scripts/rotate_spaces_key.sh
-```
-
----
-
-## doctl Commands (Keys Only)
-
-```bash
-# List all Spaces keys
-doctl spaces keys list
-
-# Create a new key
-doctl spaces keys create "myapp-spaces-key" --output json
-
-# Delete a key (by ID, not name)
-doctl spaces keys list --format ID,Name
-doctl spaces keys delete <key-id>
-```
-
-> **Note**: doctl manages **keys only**, not buckets or objects. Use aws CLI for all S3 operations.
-
----
-
-## aws CLI Commands (Buckets & Objects)
-
-Always include `--endpoint-url`:
-
-```bash
-# Set endpoint for convenience
-export EP="--endpoint-url https://nyc3.digitaloceanspaces.com"
-
-# List buckets
-aws $EP s3 ls
-
-# Create bucket
-aws $EP s3api create-bucket --bucket myapp-uploads
-
-# Delete bucket (must be empty)
-aws $EP s3 rb s3://myapp-uploads
-
-# Upload file
-aws $EP s3 cp ./local-file.txt s3://myapp-uploads/path/file.txt
-
-# Download file
-aws $EP s3 cp s3://myapp-uploads/path/file.txt ./local-file.txt
-
-# List objects
-aws $EP s3 ls s3://myapp-uploads/ --recursive
-
-# Delete object
-aws $EP s3 rm s3://myapp-uploads/path/file.txt
-
-# Sync directory
-aws $EP s3 sync ./local-dir/ s3://myapp-uploads/prefix/
-```
-
----
-
-## Environment Variables Reference
-
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `SPACES_BUCKET` | Bucket name | `myapp-uploads` |
-| `SPACES_REGION` | Region code | `nyc3`, `sfo3`, `ams3`, `sgp1`, `syd1` |
-| `SPACES_ENDPOINT` | API endpoint | `https://nyc3.digitaloceanspaces.com` |
-| `SPACES_ACCESS_KEY` | Access key ID | (from doctl) |
-| `SPACES_SECRET_KEY` | Secret access key | (from doctl, shown once) |
-| `SPACES_CDN_ENDPOINT` | CDN URL (if enabled) | `https://myapp-uploads.nyc3.cdn.digitaloceanspaces.com` |
-
----
-
-## Regions & Endpoints
-
-Spaces uses different region slugs than App Platform. See [shared/regions.yaml](../../shared/regions.yaml) for the authoritative mapping.
+Spaces uses different slugs than App Platform. See [shared/regions.yaml](../../shared/regions.yaml).
 
 | App Platform | Spaces | Endpoint |
 |--------------|--------|----------|
@@ -276,229 +125,89 @@ Spaces uses different region slugs than App Platform. See [shared/regions.yaml](
 | `syd` | `syd1` | `https://syd1.digitaloceanspaces.com` |
 | `atl` | `atl1` | `https://atl1.digitaloceanspaces.com` |
 
-> **Best practice**: Match your Spaces region to your App Platform region for lowest latency (e.g., app in `syd` → bucket in `syd1`).
-
 ---
 
-## CORS Configuration
+## Common Operations
 
-Configure via aws CLI (not doctl):
-
-### Private Uploads (Presigned URLs)
+### doctl (Keys Only)
 
 ```bash
-cat > /tmp/cors.json << 'EOF'
-{
-  "CORSRules": [{
-    "AllowedOrigins": ["https://myapp.com", "https://*.ondigitalocean.app"],
-    "AllowedMethods": ["GET", "PUT", "POST"],
-    "AllowedHeaders": ["*"],
-    "ExposeHeaders": ["ETag"],
-    "MaxAgeSeconds": 3600
-  }]
-}
-EOF
-
-aws --endpoint-url https://nyc3.digitaloceanspaces.com \
-  s3api put-bucket-cors --bucket myapp-uploads --cors-configuration file:///tmp/cors.json
+doctl spaces keys list
+doctl spaces keys create "myapp-key" --output json
+doctl spaces keys delete <key-id>
 ```
 
-### Public Assets (CDN)
+### aws CLI (Buckets & Objects)
 
 ```bash
-cat > /tmp/cors.json << 'EOF'
-{
-  "CORSRules": [{
-    "AllowedOrigins": ["*"],
-    "AllowedMethods": ["GET", "HEAD"],
-    "AllowedHeaders": ["*"],
-    "MaxAgeSeconds": 86400
-  }]
-}
-EOF
+EP="--endpoint-url https://syd1.digitaloceanspaces.com"
 
-aws --endpoint-url https://nyc3.digitaloceanspaces.com \
-  s3api put-bucket-cors --bucket myapp-uploads --cors-configuration file:///tmp/cors.json
+# Buckets
+aws $EP s3 ls
+aws $EP s3api create-bucket --bucket myapp-uploads
+aws $EP s3 rb s3://myapp-uploads
+
+# Objects
+aws $EP s3 cp ./file.txt s3://myapp-uploads/path/file.txt
+aws $EP s3 cp s3://myapp-uploads/path/file.txt ./file.txt
+aws $EP s3 ls s3://myapp-uploads/ --recursive
+aws $EP s3 sync ./local-dir/ s3://myapp-uploads/prefix/
 ```
 
 ---
 
-## Common Patterns
+## Scripts (AI-Friendly)
 
-### Pattern 1: Server-Side Uploads
-
-```
-User → App API → Spaces (private bucket) → Presigned URL for download
-```
-
-App handles upload, stores in Spaces, returns presigned download URL.
-
-### Pattern 2: Direct Upload (Presigned URLs)
-
-```
-Browser → App API (get presigned URL) → Browser uploads directly to Spaces
-```
-
-More efficient for large files — bypasses your server.
-
-> **Warning**: Presigned URLs bypass CDN caching. Use presigned URLs for private access; use CDN URLs for public static assets.
-
-### Pattern 3: Static Assets with CDN
-
-```
-Build process → Spaces (public bucket + CDN) → Browser loads from CDN edge
-```
-
-Best for images, CSS, JS bundles.
-
----
-
-## URL Patterns
-
-| Type | URL Format |
-|------|------------|
-| Standard | `https://<bucket>.<region>.digitaloceanspaces.com/<key>` |
-| CDN | `https://<bucket>.<region>.cdn.digitaloceanspaces.com/<key>` |
-| Custom Domain | `https://assets.myapp.com/<key>` (requires DNS setup) |
-
-**Examples:**
-```
-Standard: https://myapp-uploads.nyc3.digitaloceanspaces.com/images/photo.jpg
-CDN:      https://myapp-uploads.nyc3.cdn.digitaloceanspaces.com/images/photo.jpg
-```
-
----
-
-## SDK Configuration
-
-For SDK setup in Node.js, Python, and Go, see [sdk-configuration.md](reference/sdk-configuration.md).
-
-Quick example (Python):
-```python
-import boto3
-import os
-
-s3 = boto3.client(
-    's3',
-    endpoint_url=os.environ['SPACES_ENDPOINT'],
-    region_name='us-east-1',  # Required placeholder
-    aws_access_key_id=os.environ['SPACES_ACCESS_KEY'],
-    aws_secret_access_key=os.environ['SPACES_SECRET_KEY'],
-)
-```
-
----
-
-## Key Rotation Workflow
+| Script | Purpose |
+|--------|---------|
+| `scripts/bootstrap_app_spaces.sh` | Full setup: key + buckets + logging |
+| `scripts/enable_bucket_logging.sh` | Enable/verify logging (idempotent) |
+| `scripts/view_access_logs.sh` | List/download access logs |
+| `scripts/rotate_spaces_key.sh` | Rotate credentials safely |
 
 ```bash
-# 1. Create new key
-NEW_KEY=$(doctl spaces keys create "myapp-spaces-key-$(date +%Y%m%d)" --output json)
-echo "$NEW_KEY" | jq -r '.[0].access_key, .[0].secret_key'
-
-# 2. Update GitHub Secrets with new credentials
-
-# 3. Redeploy app to pick up new secrets
-
-# 4. Verify app works with new key
-
-# 5. Delete old key
-doctl spaces keys list --format ID,Name
-doctl spaces keys delete <old-key-id>
+# Set env vars then run
+./scripts/bootstrap_app_spaces.sh
 ```
-
-See [key-management.md](reference/key-management.md) for detailed rotation guide.
-
----
-
-## Access Logging
-
-Spaces can log all access requests to a separate bucket.
-
-```bash
-# Enable logging
-aws --endpoint-url https://nyc3.digitaloceanspaces.com s3api put-bucket-logging \
-  --bucket myapp-uploads \
-  --bucket-logging-status '{
-    "LoggingEnabled": {
-      "TargetBucket": "myapp-logs",
-      "TargetPrefix": "access-logs/myapp/"
-    }
-  }'
-
-# View logs (may take minutes to appear)
-aws --endpoint-url https://nyc3.digitaloceanspaces.com s3 ls s3://myapp-logs/access-logs/myapp/
-```
-
-See [access-logging.md](reference/access-logging.md) for full guide.
-
----
-
-## Local Development
-
-Use MinIO for local S3-compatible storage:
-
-```yaml
-# docker-compose.yml
-services:
-  minio:
-    image: minio/minio
-    command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-```
-
-Local environment variables:
-```bash
-SPACES_ENDPOINT=http://localhost:9000
-SPACES_REGION=us-east-1
-SPACES_ACCESS_KEY=minioadmin
-SPACES_SECRET_KEY=minioadmin
-SPACES_BUCKET=local-bucket
-```
-
----
-
-## Quick Troubleshooting
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| BucketAlreadyExists (409) | Name taken globally | Use unique prefix: `mycompany-myapp-uploads` |
-| Access Denied (403) | Wrong credentials/region | Verify keys, check endpoint matches bucket region |
-| CORS error | Origin not allowed | Add domain via `put-bucket-cors` |
-| SignatureDoesNotMatch | Endpoint format wrong | Use `https://nyc3.digitaloceanspaces.com` (no trailing slash) |
-| SlowDown (503) | Rate limiting | Implement exponential backoff |
-
-**Full troubleshooting guide**: See [troubleshooting.md](reference/troubleshooting.md)
 
 ---
 
 ## Reference Files
 
-- **[sdk-configuration.md](reference/sdk-configuration.md)** — Node.js, Python, Go SDK setup
-- **[troubleshooting.md](reference/troubleshooting.md)** — Detailed error resolution
-- **[aws-cli-operations.md](reference/aws-cli-operations.md)** — Complete aws CLI reference
-- **[key-management.md](reference/key-management.md)** — Per-app keys and rotation
-- **[access-logging.md](reference/access-logging.md)** — Bucket logging setup
+| File | Content |
+|------|---------|
+| [aws-cli-operations.md](reference/aws-cli-operations.md) | Complete aws CLI reference |
+| [key-management.md](reference/key-management.md) | Per-app keys, rotation workflow |
+| [access-logging.md](reference/access-logging.md) | Bucket logging setup |
+| [sdk-configuration.md](reference/sdk-configuration.md) | Node.js, Python, Go SDK setup |
+| [troubleshooting.md](reference/troubleshooting.md) | Common errors and fixes |
 
 ---
 
-## Integration with Other Skills
+## URL Patterns
 
-- **→ designer**: Includes Spaces environment variables when architecting apps
-- **→ deployment**: Spaces credentials stored in GitHub Secrets
+| Type | Format |
+|------|--------|
+| Standard | `https://<bucket>.<region>.digitaloceanspaces.com/<key>` |
+| CDN | `https://<bucket>.<region>.cdn.digitaloceanspaces.com/<key>` |
+
+---
+
+## Quick Troubleshooting
+
+| Error | Fix |
+|-------|-----|
+| BucketAlreadyExists (409) | Use unique prefix: `mycompany-myapp-uploads` |
+| Access Denied (403) | Verify keys, check endpoint matches bucket region |
+| CORS error | Configure via `aws s3api put-bucket-cors` |
+| SignatureDoesNotMatch | Use `https://` prefix, no trailing slash |
+
+See [troubleshooting.md](reference/troubleshooting.md) for details.
+
+---
+
+## Integration
+
+- **→ designer**: Includes Spaces env vars when architecting apps
+- **→ deployment**: Credentials stored in GitHub Secrets
 - **→ devcontainers**: MinIO provides local Spaces parity
-
----
-
-## Documentation Links
-
-- [Spaces Overview](https://docs.digitalocean.com/products/spaces/)
-- [Using AWS SDKs with Spaces](https://docs.digitalocean.com/products/spaces/how-to/use-aws-sdks/)
-- [CORS Configuration](https://docs.digitalocean.com/products/spaces/how-to/configure-cors/)
-- [CDN](https://docs.digitalocean.com/products/spaces/how-to/enable-cdn/)
-- [Spaces Access Logs (Blog)](https://www.digitalocean.com/blog/spaces-api-access-logs)
