@@ -261,18 +261,20 @@ aws $EP s3 sync ./local-dir/ s3://myapp-uploads/prefix/
 
 ## Regions & Endpoints
 
-| Spaces Region | Endpoint | App Platform Region |
-|---------------|----------|---------------------|
-| `nyc3` | `https://nyc3.digitaloceanspaces.com` | `nyc` |
-| `sfo3` | `https://sfo3.digitaloceanspaces.com` | `sfo` |
-| `ams3` | `https://ams3.digitaloceanspaces.com` | `ams` |
-| `sgp1` | `https://sgp1.digitaloceanspaces.com` | `sgp` |
-| `lon1` | `https://lon1.digitaloceanspaces.com` | `lon` |
-| `fra1` | `https://fra1.digitaloceanspaces.com` | `fra` |
-| `tor1` | `https://tor1.digitaloceanspaces.com` | `tor` |
-| `blr1` | `https://blr1.digitaloceanspaces.com` | `blr` |
-| `syd1` | `https://syd1.digitaloceanspaces.com` | `syd` |
-| `atl1` | `https://atl1.digitaloceanspaces.com` | `atl` |
+Spaces uses different region slugs than App Platform. See [shared/regions.yaml](../../shared/regions.yaml) for the authoritative mapping.
+
+| App Platform | Spaces | Endpoint |
+|--------------|--------|----------|
+| `nyc` | `nyc3` | `https://nyc3.digitaloceanspaces.com` |
+| `sfo` | `sfo3` | `https://sfo3.digitaloceanspaces.com` |
+| `ams` | `ams3` | `https://ams3.digitaloceanspaces.com` |
+| `lon` | `lon1` | `https://lon1.digitaloceanspaces.com` |
+| `fra` | `fra1` | `https://fra1.digitaloceanspaces.com` |
+| `tor` | `tor1` | `https://tor1.digitaloceanspaces.com` |
+| `sgp` | `sgp1` | `https://sgp1.digitaloceanspaces.com` |
+| `blr` | `blr1` | `https://blr1.digitaloceanspaces.com` |
+| `syd` | `syd1` | `https://syd1.digitaloceanspaces.com` |
+| `atl` | `atl1` | `https://atl1.digitaloceanspaces.com` |
 
 > **Best practice**: Match your Spaces region to your App Platform region for lowest latency (e.g., app in `syd` → bucket in `syd1`).
 
