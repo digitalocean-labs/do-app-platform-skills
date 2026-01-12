@@ -65,8 +65,10 @@ jq --version             # JSON processor
 ### Step 1: Set Environment
 
 ```bash
-export DO_SPACES_REGION="nyc3"
-export DO_SPACES_ENDPOINT="https://nyc3.digitaloceanspaces.com"
+# Choose region closest to your App Platform app (see Regions & Endpoints below)
+export DO_SPACES_REGION="syd1"  # Options: nyc3, sfo3, ams3, sgp1, fra1, syd1
+export DO_SPACES_ENDPOINT="https://${DO_SPACES_REGION}.digitaloceanspaces.com"
+
 export APP_NAME="myapp"
 export SRC_BUCKET="${APP_NAME}-uploads"
 export LOG_BUCKET="${APP_NAME}-logs"
@@ -137,11 +139,11 @@ services:
   - name: api
     envs:
       - key: SPACES_BUCKET
-        value: myapp-uploads
+        value: myapp-uploads              # Your bucket name
       - key: SPACES_REGION
-        value: nyc3
+        value: ${SPACES_REGION}           # Match your bucket's region
       - key: SPACES_ENDPOINT
-        value: https://nyc3.digitaloceanspaces.com
+        value: ${SPACES_ENDPOINT}         # e.g., https://syd1.digitaloceanspaces.com
       - key: SPACES_ACCESS_KEY
         scope: RUN_TIME
         type: SECRET
@@ -151,6 +153,8 @@ services:
         type: SECRET
         value: ${SPACES_SECRET_KEY}
 ```
+
+> **Region selection**: Create your bucket in the same region as your App Platform app for lowest latency. See [Regions & Endpoints](#regions--endpoints) for available options.
 
 ---
 
@@ -168,9 +172,9 @@ For idempotent, scriptable operations, use the provided scripts:
 ### Usage Example
 
 ```bash
-# Set required env vars (see Quick Start)
-export DO_SPACES_REGION="nyc3"
-export DO_SPACES_ENDPOINT="https://nyc3.digitaloceanspaces.com"
+# Set required env vars (see Quick Start Step 1)
+export DO_SPACES_REGION="syd1"  # Your chosen region
+export DO_SPACES_ENDPOINT="https://${DO_SPACES_REGION}.digitaloceanspaces.com"
 export APP_NAME="myapp"
 export SRC_BUCKET="${APP_NAME}-uploads"
 export LOG_BUCKET="${APP_NAME}-logs"
@@ -257,14 +261,16 @@ aws $EP s3 sync ./local-dir/ s3://myapp-uploads/prefix/
 
 ## Regions & Endpoints
 
-| Region | Endpoint |
-|--------|----------|
-| NYC3 | `https://nyc3.digitaloceanspaces.com` |
-| SFO3 | `https://sfo3.digitaloceanspaces.com` |
-| AMS3 | `https://ams3.digitaloceanspaces.com` |
-| SGP1 | `https://sgp1.digitaloceanspaces.com` |
-| FRA1 | `https://fra1.digitaloceanspaces.com` |
-| SYD1 | `https://syd1.digitaloceanspaces.com` |
+| Spaces Region | Endpoint | App Platform Region |
+|---------------|----------|---------------------|
+| `nyc3` | `https://nyc3.digitaloceanspaces.com` | `nyc` |
+| `sfo3` | `https://sfo3.digitaloceanspaces.com` | `sfo` |
+| `ams3` | `https://ams3.digitaloceanspaces.com` | `ams` |
+| `sgp1` | `https://sgp1.digitaloceanspaces.com` | `sgp` |
+| `fra1` | `https://fra1.digitaloceanspaces.com` | `fra` |
+| `syd1` | `https://syd1.digitaloceanspaces.com` | `syd` |
+
+> **Best practice**: Match your Spaces region to your App Platform region for lowest latency (e.g., app in `syd` → bucket in `syd1`).
 
 ---
 
