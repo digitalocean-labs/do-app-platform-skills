@@ -122,6 +122,20 @@ platform_mappings:
     bom: blr      # Mumbai -> Bangalore
     gru: nyc      # Sao Paulo -> NYC
 
+# Spaces region mappings (App Platform slug -> Spaces slug)
+# Spaces uses different slugs with numeric suffixes
+spaces:
+  nyc: nyc3
+  sfo: sfo3
+  ams: ams3
+  lon: lon1
+  fra: fra1
+  tor: tor1
+  sgp: sgp1
+  blr: blr1
+  syd: syd1
+  atl: atl1
+
 # Default region selection
 defaults:
   primary: nyc
