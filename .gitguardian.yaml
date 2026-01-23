@@ -1,0 +1,17 @@
+# GitGuardian Configuration
+# https://docs.gitguardian.com/ggshield-docs/reference/configuration
+
+# Paths to exclude from secret scanning
+paths-ignore:
+  - "**/tests/**"
+  - "**/test_*"
+  - "**/*_test.py"
+  - "**/*.test.js"
+  - "**/*.spec.js"
+  - "**/fixtures/**"
+  - "**/mocks/**"
+
+# You can also ignore specific secret types if needed
+# matches-ignore:
+#   - name: "Test database passwords"
+#     match: "FAKE_*"

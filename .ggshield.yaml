@@ -1,0 +1,24 @@
+# ggshield Configuration (alternative to .gitguardian.yaml)
+# https://docs.gitguardian.com/ggshield-docs/reference/configuration
+
+version: 2
+
+secret:
+  # Paths to ignore
+  ignored-paths:
+    - "**/tests/**"
+    - "**/test_*"
+    - "**/*_test.py"
+    - "**/conftest.py"
+    - "**/fixtures/**"
+    - "**/mocks/**"
+
+  # Ignore specific detectors for test files
+  ignored-detectors:
+    - generic_password
+    - postgresql_credentials
+
+  # Specific matches to ignore (use `ggshield secret scan` output to get hashes)
+  ignored-matches:
+    - name: "Test PostgreSQL URLs"
+      match: "postgresql://"
