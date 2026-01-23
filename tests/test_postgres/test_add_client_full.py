@@ -104,7 +104,7 @@ class TestGetConnectionString:
     def test_generates_connection_string(self):
         """Should generate valid connection string."""
         conn = get_connection_string(
-            'postgresql://admin:FAKE@host.db.ondigitalocean.com:25060/defaultdb?sslmode=require',  # ggshield-ignore-line
+            'postgresql://admin:FAKE@host.db.ondigitalocean.com:25060/defaultdb?sslmode=require',  # pragma: allowlist secret
             'tenant1_user',
             'FAKE_TEST_PASS'
         )
@@ -116,7 +116,7 @@ class TestGetConnectionString:
     def test_includes_sslmode(self):
         """Should include sslmode."""
         conn = get_connection_string(
-            'postgresql://admin:FAKE@host:25060/db?sslmode=require',  # ggshield-ignore-line
+            'postgresql://admin:FAKE@host:25060/db?sslmode=require',  # pragma: allowlist secret
             'user',
             'FAKE_PASS'
         )
@@ -144,7 +144,7 @@ class TestExecuteSetup:
             with patch('builtins.print'):
                 try:
                     add_client.execute_setup(
-                        'postgresql://admin:FAKE@host/db',  # ggshield-ignore-line
+                        'postgresql://admin:FAKE@host/db',  # pragma: allowlist secret
                         'tenant1',
                         'tenant1_user',
                         'FAKE_PASS'
@@ -170,7 +170,7 @@ class TestExecuteSetup:
             with patch('builtins.print'):
                 try:
                     add_client.execute_setup(
-                        'postgresql://admin:FAKE@host/db',  # ggshield-ignore-line
+                        'postgresql://admin:FAKE@host/db',  # pragma: allowlist secret
                         'tenant1',
                         'tenant1_user',
                         'FAKE_PASS'
@@ -228,7 +228,7 @@ class TestMainFunction:
             with patch('sys.argv', [
                 'add_client.py',
                 'cluster-123',
-                'postgresql://admin:FAKE@host:25060/db?sslmode=require',  # ggshield-ignore-line
+                'postgresql://admin:FAKE@host:25060/db?sslmode=require',  # pragma: allowlist secret
                 'tenant1'
             ]):
                 try:
@@ -274,7 +274,7 @@ class TestErrorHandling:
             
             with patch('builtins.print'):
                 result = add_client.execute_setup(
-                    'postgresql://admin:FAKE@invalid/db',  # ggshield-ignore-line
+                    'postgresql://admin:FAKE@invalid/db',  # pragma: allowlist secret
                     'tenant1',
                     'tenant1_user',
                     'FAKE_PASS'
@@ -305,7 +305,7 @@ class TestErrorHandling:
             
             with patch('builtins.print'):
                 result = add_client.execute_setup(
-                    'postgresql://admin:FAKE@host/db',  # ggshield-ignore-line
+                    'postgresql://admin:FAKE@host/db',  # pragma: allowlist secret
                     'existing_schema',
                     'user',
                     'FAKE_PASS'
