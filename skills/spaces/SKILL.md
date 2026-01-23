@@ -1,6 +1,10 @@
 ---
 name: spaces
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Configure DigitalOcean Spaces (S3-compatible object storage) for App Platform apps. Use when setting up file uploads, static assets, CDN, access logging, or per-app credential management.
+related_skills: [designer]
+deprecated: false
 ---
 
 # Spaces Skill

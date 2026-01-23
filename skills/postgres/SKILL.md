@@ -1,6 +1,10 @@
 ---
 name: postgres
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Configure DigitalOcean Managed Postgres with bindable variables or schema isolation. Use when setting up databases, creating users, managing permissions, configuring multi-tenant schemas, or troubleshooting database connectivity on App Platform.
+related_skills: [designer, networking]
+deprecated: false
 ---
 
 # Postgres Skill

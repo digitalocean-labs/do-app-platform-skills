@@ -1,6 +1,10 @@
 ---
 name: devcontainers
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Set up local development environments with production parity for DigitalOcean App Platform. Use when setting up local dev, adding devcontainer to a project, running App Platform apps locally, or configuring backing services (Postgres, Redis, Kafka, S3).
+related_skills: [designer, postgres, managed-db-services]
+deprecated: false
 ---
 
 # Dev Containers Skill

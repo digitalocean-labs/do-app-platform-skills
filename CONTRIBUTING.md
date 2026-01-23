@@ -59,18 +59,112 @@ skills/
 
 ### SKILL.md Requirements
 
+Every SKILL.md must have valid frontmatter conforming to `shared/skill-schema.json`:
+
 ```yaml
 ---
 name: skill-name
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Brief description. Use when [trigger phrases].
+related_skills: [designer, deployment]
+deprecated: false
 ---
 ```
+
+**Validation**: Run `python scripts/validate_skills.py` before submitting.
 
 - Keep to 150-350 lines
 - Include Quick Decision tree
 - Link to reference files for details
 
 ---
+
+## Versioning Policy
+
+### Semantic Versioning
+
+All skills follow [Semantic Versioning](https://semver.org/):
+
+| Version Bump | When to Use | Example |
+|--------------|-------------|---------|
+| **MAJOR** (1.0.0 → 2.0.0) | Breaking changes, incompatible updates | Removed command, changed output format |
+| **MINOR** (1.0.0 → 1.1.0) | New features, backward compatible | Added new reference doc, new option |
+| **PATCH** (1.0.0 → 1.0.1) | Bug fixes, typo corrections | Fixed example, corrected command |
+
+### Breaking Changes
+
+A **breaking change** includes:
+- Removing or renaming a skill
+- Changing required frontmatter fields
+- Removing documented commands/patterns
+- Changing output format of scripts
+- Removing reference files
+
+**Process**:
+1. Open issue discussing the change
+2. Mark skill/feature as deprecated (see below)
+3. Provide migration path in documentation
+4. Minimum 30-day deprecation period
+5. Remove in next MAJOR version
+
+### Updating Versions
+
+When modifying a skill:
+1. Update `version` in SKILL.md frontmatter
+2. Update `CHANGELOG.md` with changes
+3. If breaking: update MAJOR and document migration
+
+---
+
+## Deprecation Policy
+
+### Deprecating a Skill
+
+When a skill is being phased out:
+
+1. **Mark as deprecated** in frontmatter:
+   ```yaml
+   ---
+   name: old-skill
+   version: 1.5.0
+   deprecated: true
+   deprecated_message: "Use new-skill instead. Migration: [link]"
+   sunset_date: "2026-06-01"
+   ---
+   ```
+
+2. **Add deprecation notice** at top of SKILL.md:
+   ```markdown
+   > ⚠️ **DEPRECATED**: This skill will be removed on 2026-06-01.
+   > Use [new-skill](../new-skill/SKILL.md) instead.
+   ```
+
+3. **Document migration path** in reference/migration.md
+
+4. **Update CHANGELOG.md**:
+   ```markdown
+   ### Deprecated
+   - `old-skill` - Use `new-skill` instead (sunset: 2026-06-01)
+   ```
+
+### Deprecating Features Within a Skill
+
+For deprecated patterns or commands:
+- Mark with `[DEPRECATED]` in documentation
+- Provide alternative in the same section
+- Remove in next MAJOR version
+
+### Sunset Timeline
+
+| Stage | Timeline | Action |
+|-------|----------|--------|
+| Announce | Day 0 | Mark deprecated, document alternative |
+| Warning | +14 days | Add runtime warnings if applicable |
+| Remove | +30 days minimum | Remove in MAJOR version bump |
+
+---
+
 
 ## Writing Skills
 
