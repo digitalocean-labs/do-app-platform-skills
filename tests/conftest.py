@@ -158,10 +158,10 @@ def sample_app_spec():
 def sample_connection_strings():
     """Sample database connection strings for testing."""
     return {
-        "postgres": "postgresql://user:pass@host.db.ondigitalocean.com:25060/db?sslmode=require",
-        "mysql": "mysql://user:pass@host.db.ondigitalocean.com:25060/db?ssl-mode=REQUIRED",
-        "mongodb": "mongodb+srv://user:pass@host.db.ondigitalocean.com/db?tls=true",
-        "valkey": "rediss://default:pass@host.db.ondigitalocean.com:25061",
+        "postgres": "postgresql://user:pass@host.db.ondigitalocean.com:25060/db?sslmode=require",  # pragma: allowlist secret
+        "mysql": "mysql://user:pass@host.db.ondigitalocean.com:25060/db?ssl-mode=REQUIRED",  # pragma: allowlist secret
+        "mongodb": "mongodb+srv://user:pass@host.db.ondigitalocean.com/db?tls=true",  # pragma: allowlist secret
+        "valkey": "rediss://default:pass@host.db.ondigitalocean.com:25061",  # pragma: allowlist secret
     }
 
 
@@ -169,7 +169,7 @@ def sample_connection_strings():
 def sample_env_vars():
     """Sample environment variables for testing."""
     return {
-        "DATABASE_URL": "postgresql://user:pass@localhost:5432/testdb",
+        "DATABASE_URL": "postgresql://user:pass@localhost:5432/testdb",  # pragma: allowlist secret
         "SECRET_KEY": "test-secret-key",
         "API_KEY": "test-api-key",
         "PORT": "8080",

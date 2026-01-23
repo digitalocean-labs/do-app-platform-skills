@@ -138,7 +138,7 @@ class TestDatabaseSetupWorkflow:
         """Should generate connection strings for client."""
         from generate_connection_string import generate_connection_strings
         
-        base = "postgresql://admin:adminpass@db.example.com:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:adminpass@db.example.com:25060/defaultdb?sslmode=require"  # pragma: allowlist secret
         generate_connection_strings(base, "client_user", "client_pass", schema="client_schema")
         
         output = capsys.readouterr().out

@@ -165,6 +165,7 @@ For deprecated patterns or commands:
 
 ---
 
+
 ## Writing Skills
 
 ### Philosophy

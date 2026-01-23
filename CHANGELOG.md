@@ -6,10 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Added
-- Production readiness review document
-- CHANGELOG.md
-
 ---
 
 ## [0.1.2] - 2026-01-22
@@ -39,6 +35,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated README with expanded version compatibility section
 - Updated CI workflow to include skill validation
 - Updated CONTRIBUTING.md with SKILL.md requirements
+=======
+- Contributing guidelines
+- CHANGELOG.md
+
+### Changed
+- Updated README with version compatibility matrix
 
 ---
 
@@ -62,7 +64,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - `requirements-dev.txt` - development dependencies
   - `conftest.py` - shared test fixtures
 - Contributing guidelines (CONTRIBUTING.md)
-
 ### Security
 - Added credential pattern documentation
 - Added security scanning in CI

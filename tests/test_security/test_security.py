@@ -53,7 +53,7 @@ class TestPasswordSecurity:
         """Connection strings should handle passwords carefully."""
         from generate_connection_string import generate_connection_strings
         
-        base = "postgresql://admin:adminpass@host:25060/db?sslmode=require"
+        base = "postgresql://admin:adminpass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         sensitive_password = "VerySecret123!@#"
         
         generate_connection_strings(base, "user", sensitive_password)
@@ -68,7 +68,7 @@ class TestPasswordSecurity:
         """Special characters in passwords should be URL-encoded."""
         from generate_connection_string import generate_connection_strings
         
-        base = "postgresql://admin:pass@host:25060/db?sslmode=require"
+        base = "postgresql://admin:pass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         password_with_special = "p@ss#word!"
         
         generate_connection_strings(base, "user", password_with_special)
@@ -180,7 +180,7 @@ class TestSSLConfiguration:
         from generate_connection_string import generate_connection_strings
         
         # Base URL without SSL mode
-        base = "postgresql://admin:pass@host:25060/db"
+        base = "postgresql://admin:pass@host:25060/db"  # pragma: allowlist secret
         
         generate_connection_strings(base, "user", "pass")
         
@@ -193,7 +193,7 @@ class TestSSLConfiguration:
         """All generated connection strings should enforce SSL."""
         from generate_connection_string import generate_connection_strings
         
-        base = "postgresql://admin:pass@host:25060/db"
+        base = "postgresql://admin:pass@host:25060/db"  # pragma: allowlist secret
         
         generate_connection_strings(base, "user", "pass", schema="myschema")
         
@@ -340,7 +340,7 @@ class TestOutputSanitization:
             for pattern in sensitive_patterns:
                 if pattern in error_msg.lower():
                     # Should not show actual values
-                    assert "***" in error_msg or "[REDACTED]" in error_msg or True
+                    assert "***" in error_msg or "[REDACTED]" in error_msg
 
     def test_file_paths_not_leaked_to_user(self, temp_repo):
         """Internal file paths should not be leaked unnecessarily."""
@@ -363,7 +363,7 @@ class TestDatabaseConnectionSecurity:
         """Database connection strings should enforce SSL."""
         from create_schema_user import build_connection_string
         
-        base = "postgresql://admin:pass@host:25060/db"
+        base = "postgresql://admin:pass@host:25060/db"  # pragma: allowlist secret
         result = build_connection_string(base, "user", "pass")
         
         # Should have SSL mode

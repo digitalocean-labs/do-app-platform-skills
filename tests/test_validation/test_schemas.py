@@ -194,10 +194,8 @@ class TestReferenceDocValidation:
                 ref_dir = skill_dir / "reference"
                 # Reference dir might not exist for all skills, but check if present
                 if ref_dir.exists():
-                    ref_files = list(ref_dir.glob("*.md"))
                     # If reference dir exists, it should have content
-                    if ref_dir.exists():
-                        assert len(list(ref_dir.iterdir())) > 0, f"Empty reference dir in {skill_dir.name}"
+                    assert len(list(ref_dir.iterdir())) > 0, f"Empty reference dir in {skill_dir.name}"
 
     def test_skill_readme_exists(self):
         """Each skill should have a README."""
