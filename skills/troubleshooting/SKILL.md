@@ -1,6 +1,10 @@
 ---
 name: app-platform-troubleshooting
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Debug running App Platform applications by accessing containers, analyzing logs, running diagnostics, and applying fixes. Use when apps fail to deploy, crash at runtime, have connectivity issues, or need performance diagnosis.
+related_skills: [deployment, networking, postgres]
+deprecated: false
 ---
 
 # App Platform Troubleshooting Skill

@@ -1,6 +1,10 @@
 ---
 name: ai-services
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Configure DigitalOcean Gradient AI serverless inference and Agent Development Kit. Use when adding LLM inference, model access keys, serverless AI endpoints, or building AI agents with ADK on App Platform.
+related_skills: [designer, deployment]
+deprecated: false
 ---
 
 # AI Services Skill

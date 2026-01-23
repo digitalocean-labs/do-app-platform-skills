@@ -1,6 +1,10 @@
 ---
 name: app-platform-migration
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Migrate applications from Heroku, AWS, Render, Railway, Fly.io, or Docker Compose to DigitalOcean App Platform. Use when converting existing apps, mapping services, refactoring platform-specific code, or creating app specs from other platform configurations.
+related_skills: [designer, postgres, managed-db-services, networking, deployment]
+deprecated: false
 ---
 
 # App Platform Migration Skill

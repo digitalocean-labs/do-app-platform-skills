@@ -1,6 +1,10 @@
 ---
 name: deployment
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Deploy applications to DigitalOcean App Platform via GitHub Actions with proper environment management and secrets handling. Use when setting up CI/CD pipelines, configuring staging/production environments, managing deployment secrets, or creating GitHub Actions workflows.
+related_skills: [designer, troubleshooting]
+deprecated: false
 ---
 
 # Deployment Skill

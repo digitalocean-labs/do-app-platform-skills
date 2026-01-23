@@ -1,6 +1,10 @@
 ---
 name: app-platform-networking
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Configure domains, routing, CORS, VPC, static IPs, and inter-service communication for DigitalOcean App Platform. Use when setting up custom domains, subdomain routing, cross-origin API access, or secure database connectivity.
+related_skills: [designer, postgres, managed-db-services]
+deprecated: false
 ---
 
 # App Platform Networking Skill

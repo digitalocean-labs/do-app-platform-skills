@@ -1,6 +1,54 @@
 # DigitalOcean App Platform Skills
 
+[![Tests](https://github.com/bikramkgupta/do-app-platform-skills/actions/workflows/test.yml/badge.svg)](https://github.com/bikramkgupta/do-app-platform-skills/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/bikramkgupta/do-app-platform-skills/graph/badge.svg)](https://codecov.io/gh/bikramkgupta/do-app-platform-skills)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Claude/Agent skills for DigitalOcean App Platform - deployment, migration, networking, database configuration, and troubleshooting.
+
+## Version Compatibility
+
+### Tool Requirements
+
+| Tool | Minimum Version | Recommended | Notes |
+|------|-----------------|-------------|-------|
+| doctl | 1.82.0+ | 1.100.0+ | App spec v2 support |
+| Python | 3.11+ | 3.12+ | For scripts |
+| Node.js | 20+ | 22+ | LTS versions |
+| PostgreSQL | 15+ | 16 | Default: 16 |
+
+### Skills Version
+
+All skills in this repository are versioned. Check each skill's frontmatter for:
+- `version`: Semantic version (MAJOR.MINOR.PATCH)
+- `min_doctl_version`: Minimum doctl CLI version required
+
+```yaml
+# Example from SKILL.md frontmatter
+---
+name: app-platform-designer
+version: 1.0.0
+min_doctl_version: "1.82.0"
+---
+```
+
+### API Compatibility Matrix
+
+| Skills Version | doctl Version | App Spec Version | Status |
+|----------------|---------------|------------------|--------|
+| 1.0.x | 1.82.0+ | v2 | ✅ Current |
+
+### Checking Your doctl Version
+
+```bash
+doctl version
+# doctl version 1.100.0-release
+
+# Update if needed
+brew upgrade doctl  # macOS
+snap refresh doctl  # Linux
+```
 
 ## What Are Skills?
 
