@@ -131,37 +131,37 @@ class TestGenerateConnectionString:
 
     def test_generates_basic_connection_string(self, capsys):
         """Should generate basic connection string."""
-        base = "postgresql://admin:oldpass@host.db.ondigitalocean.com:25060/defaultdb?sslmode=require"
-        generate_connection_strings(base, "newuser", "newpass")
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        generate_connection_strings(base, "testuser", "FAKE_NEW_PASS")
         
         output = capsys.readouterr().out
-        assert "newuser:newpass@" in output
-        assert "host.db.ondigitalocean.com:25060" in output
+        assert "testuser:FAKE_NEW_PASS@" in output
+        assert "localhost:25060" in output
         assert "sslmode=require" in output
 
     def test_generates_schema_specific_connection(self, capsys):
         """Should generate schema-specific connection string."""
-        base = "postgresql://admin:oldpass@host:25060/defaultdb?sslmode=require"
-        generate_connection_strings(base, "user1", "pass1", schema="myschema")
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        generate_connection_strings(base, "testuser", "FAKE_TEST_PASS", schema="myschema")
         
         output = capsys.readouterr().out
         assert "myschema" in output
 
     def test_url_encodes_special_characters(self, capsys):
         """Should URL-encode passwords with special characters."""
-        base = "postgresql://admin:oldpass@host:25060/defaultdb?sslmode=require"
-        password = "p@ss#word!"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        password = "FAKE@TEST#PASS!"
         
-        generate_connection_strings(base, "user1", password)
+        generate_connection_strings(base, "testuser", password)
         
         output = capsys.readouterr().out
         # Should have encoded version somewhere
-        assert "user1" in output
+        assert "testuser" in output
 
     def test_generates_environment_variables(self, capsys):
         """Should generate environment variable format."""
-        base = "postgresql://admin:oldpass@host:25060/defaultdb?sslmode=require"
-        generate_connection_strings(base, "user1", "pass1")
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
         assert "DATABASE_URL=" in output
@@ -172,24 +172,24 @@ class TestGenerateConnectionString:
 
     def test_generates_orm_specific_formats(self, capsys):
         """Should generate ORM-specific formats."""
-        base = "postgresql://admin:oldpass@host:25060/defaultdb?sslmode=require"
-        generate_connection_strings(base, "user1", "pass1")
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
         assert "Prisma" in output or "SQLAlchemy" in output or "Drizzle" in output
 
     def test_defaults_to_require_sslmode(self, capsys):
         """Should default to sslmode=require."""
-        base = "postgresql://admin:oldpass@host:25060/defaultdb"
-        generate_connection_strings(base, "user1", "pass1")
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb"
+        generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
         assert "sslmode=require" in output
 
     def test_generates_psql_command(self, capsys):
         """Should generate psql command."""
-        base = "postgresql://admin:oldpass@host:25060/defaultdb?sslmode=require"
-        generate_connection_strings(base, "user1", "pass1")
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
         assert "psql" in output
@@ -236,7 +236,7 @@ class TestSecureSetup:
         """Should extract hostname from connection string."""
         from secure_setup import extract_host_from_url
         
-        url = "postgresql://user:pass@myhost.db.ondigitalocean.com:25060/db"
+        url = "postgresql://testuser:FAKE_TEST_PASS@example-db.localhost:25060/testdb"
         host = extract_host_from_url(url)
         
-        assert host == "myhost.db.ondigitalocean.com"
+        assert host == "example-db.localhost"
