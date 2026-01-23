@@ -68,7 +68,7 @@ class TestBuildConnectionStringFull:
     def test_builds_basic_connection_string(self):
         """Should build basic connection string."""
         conn = build_connection_string(
-            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',
+            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',  # pragma: allowlist secret
             'newuser',
             'FAKE_NEW_PASS'
         )
@@ -79,7 +79,7 @@ class TestBuildConnectionStringFull:
     def test_preserves_host_and_port(self):
         """Should preserve host and port from base URL."""
         conn = build_connection_string(
-            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',
+            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',  # pragma: allowlist secret
             'newuser',
             'FAKE_NEW_PASS'
         )
@@ -90,7 +90,7 @@ class TestBuildConnectionStringFull:
     def test_includes_sslmode(self):
         """Should include sslmode=require."""
         conn = build_connection_string(
-            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',
+            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',  # pragma: allowlist secret
             'newuser',
             'FAKE_NEW_PASS'
         )

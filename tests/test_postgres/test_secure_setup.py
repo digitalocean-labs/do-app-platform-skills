@@ -48,19 +48,19 @@ class TestExtractHostFromUrl:
     
     def test_extracts_hostname(self):
         """Should extract hostname from connection string."""
-        url = "postgresql://user:pass@my-db.db.ondigitalocean.com:25060/db"
+        url = "postgresql://user:pass@my-db.db.ondigitalocean.com:25060/db"  # pragma: allowlist secret
         host = extract_host_from_url(url)
         assert host == "my-db.db.ondigitalocean.com"
     
     def test_handles_ip_address(self):
         """Should handle IP addresses."""
-        url = "postgresql://user:pass@192.168.1.100:5432/db"
+        url = "postgresql://user:pass@192.168.1.100:5432/db"  # pragma: allowlist secret
         host = extract_host_from_url(url)
         assert host == "192.168.1.100"
     
     def test_handles_localhost(self):
         """Should handle localhost."""
-        url = "postgresql://user:pass@localhost:5432/db"
+        url = "postgresql://user:pass@localhost:5432/db"  # pragma: allowlist secret
         host = extract_host_from_url(url)
         assert host == "localhost"
 
@@ -131,7 +131,7 @@ class TestExecuteSQL:
         """Should call psql with connection URL and SQL."""
         mock_run.return_value = MagicMock(returncode=0)
         
-        result = execute_sql("postgresql://user:pass@host/db", "SELECT 1")
+        result = execute_sql("postgresql://user:pass@host/db", "SELECT 1")  # pragma: allowlist secret
         
         mock_run.assert_called_once()
         call_args = mock_run.call_args[0][0]
@@ -143,7 +143,7 @@ class TestExecuteSQL:
         """Should return True on successful execution."""
         mock_run.return_value = MagicMock(returncode=0)
         
-        result = execute_sql("postgresql://user:pass@host/db", "SELECT 1")
+        result = execute_sql("postgresql://user:pass@host/db", "SELECT 1")  # pragma: allowlist secret
         
         assert result is True
     
@@ -152,7 +152,7 @@ class TestExecuteSQL:
         """Should return False on execution failure."""
         mock_run.return_value = MagicMock(returncode=1)
         
-        result = execute_sql("postgresql://user:pass@host/db", "INVALID SQL")
+        result = execute_sql("postgresql://user:pass@host/db", "INVALID SQL")  # pragma: allowlist secret
         
         assert result is False
 
@@ -166,7 +166,7 @@ class TestExecuteSQLScript:
         mock_run.return_value = MagicMock(returncode=0)
         
         script = "CREATE TABLE test (id INT);\nINSERT INTO test VALUES (1);"
-        result = execute_sql_script("postgresql://user:pass@host/db", script)
+        result = execute_sql_script("postgresql://user:pass@host/db", script)  # pragma: allowlist secret
         
         mock_run.assert_called_once()
         assert mock_run.call_args[1]['input'] == script
@@ -176,7 +176,7 @@ class TestExecuteSQLScript:
         """Should return True on successful execution."""
         mock_run.return_value = MagicMock(returncode=0)
         
-        result = execute_sql_script("postgresql://user:pass@host/db", "SELECT 1;")
+        result = execute_sql_script("postgresql://user:pass@host/db", "SELECT 1;")  # pragma: allowlist secret
         
         assert result is True
 

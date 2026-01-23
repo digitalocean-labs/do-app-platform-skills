@@ -40,7 +40,7 @@ class TestListSchemasUsersCore:
             
             with patch('builtins.print') as mock_print:
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -67,7 +67,7 @@ class TestListSchemasUsersCore:
             
             with patch('builtins.print') as mock_print:
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -92,7 +92,7 @@ class TestListSchemasUsersCore:
             
             with patch('builtins.print') as mock_print:
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -114,7 +114,7 @@ class TestListSchemasUsersCore:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -134,7 +134,7 @@ class TestListSchemasUsersCore:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -159,7 +159,7 @@ class TestSchemaFiltering:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -187,7 +187,7 @@ class TestUserFiltering:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -217,7 +217,7 @@ class TestIsolationCheck:
             
             with patch('builtins.print') as mock_print:
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -252,7 +252,7 @@ class TestMainFunction:
             if hasattr(list_schemas_users, 'main'):
                 with patch('sys.argv', [
                     'list_schemas_users.py',
-                    'postgresql://user:pass@host/db'
+                    'postgresql://user:pass@host/db'  # pragma: allowlist secret
                 ]):
                     with patch('builtins.print'):
                         try:
@@ -282,7 +282,7 @@ class TestOutputFormatting:
             
             with patch('builtins.print') as mock_print:
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -303,7 +303,7 @@ class TestOutputFormatting:
             
             with patch('builtins.print') as mock_print:
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             

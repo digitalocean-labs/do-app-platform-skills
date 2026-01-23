@@ -17,7 +17,7 @@ class TestConnectionStringGeneration:
     
     def test_basic_output(self):
         """Should output connection string without errors."""
-        base_url = "postgresql://doadmin:pass@host:25060/defaultdb?sslmode=require"
+        base_url = "postgresql://doadmin:pass@host:25060/defaultdb?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "myuser", "mypass")
@@ -28,7 +28,7 @@ class TestConnectionStringGeneration:
     
     def test_includes_basic_connection_string(self):
         """Should include basic connection string."""
-        base_url = "postgresql://doadmin:pass@db-host.com:25060/defaultdb?sslmode=require"
+        base_url = "postgresql://doadmin:pass@db-host.com:25060/defaultdb?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "appuser", "secretpass")
@@ -39,7 +39,7 @@ class TestConnectionStringGeneration:
     
     def test_includes_psql_command(self):
         """Should include psql command example."""
-        base_url = "postgresql://doadmin:pass@host:25060/db?sslmode=require"
+        base_url = "postgresql://doadmin:pass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -49,7 +49,7 @@ class TestConnectionStringGeneration:
     
     def test_includes_environment_variables(self):
         """Should include environment variable format."""
-        base_url = "postgresql://doadmin:pass@myhost:25060/mydb?sslmode=require"
+        base_url = "postgresql://doadmin:pass@myhost:25060/mydb?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "dbuser", "dbpass")
@@ -63,7 +63,7 @@ class TestConnectionStringGeneration:
     
     def test_includes_schema_when_provided(self):
         """Should include schema in connection string when specified."""
-        base_url = "postgresql://doadmin:pass@host:25060/db?sslmode=require"
+        base_url = "postgresql://doadmin:pass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass", schema="myschema")
@@ -74,7 +74,7 @@ class TestConnectionStringGeneration:
     
     def test_includes_orm_formats(self):
         """Should include ORM-specific formats."""
-        base_url = "postgresql://doadmin:pass@host:25060/db?sslmode=require"
+        base_url = "postgresql://doadmin:pass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -89,7 +89,7 @@ class TestURLParsing:
     
     def test_extracts_host(self):
         """Should correctly extract hostname."""
-        base_url = "postgresql://admin:pass@my-db-cluster.db.ondigitalocean.com:25060/db?sslmode=require"
+        base_url = "postgresql://admin:pass@my-db-cluster.db.ondigitalocean.com:25060/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -99,7 +99,7 @@ class TestURLParsing:
     
     def test_extracts_port(self):
         """Should correctly extract port."""
-        base_url = "postgresql://admin:pass@host:25061/db?sslmode=require"
+        base_url = "postgresql://admin:pass@host:25061/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -109,7 +109,7 @@ class TestURLParsing:
     
     def test_extracts_database(self):
         """Should correctly extract database name."""
-        base_url = "postgresql://admin:pass@host:25060/myappdb?sslmode=require"
+        base_url = "postgresql://admin:pass@host:25060/myappdb?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -119,7 +119,7 @@ class TestURLParsing:
     
     def test_extracts_sslmode(self):
         """Should correctly extract SSL mode."""
-        base_url = "postgresql://admin:pass@host:25060/db?sslmode=verify-full"
+        base_url = "postgresql://admin:pass@host:25060/db?sslmode=verify-full"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -133,7 +133,7 @@ class TestPasswordHandling:
     
     def test_password_url_encoded(self):
         """Passwords with special chars should be URL encoded."""
-        base_url = "postgresql://admin:pass@host:25060/db?sslmode=require"
+        base_url = "postgresql://admin:pass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         
         # Password with special characters
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
@@ -146,7 +146,7 @@ class TestPasswordHandling:
     
     def test_password_not_in_env_var_name(self):
         """Password should only appear in values, not variable names."""
-        base_url = "postgresql://admin:pass@host:25060/db?sslmode=require"
+        base_url = "postgresql://admin:pass@host:25060/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "secretvalue")
@@ -162,7 +162,7 @@ class TestDefaultValues:
     def test_default_port(self):
         """Should use default port if not specified."""
         # Note: This URL parsing behavior depends on implementation
-        base_url = "postgresql://admin:pass@host/db?sslmode=require"
+        base_url = "postgresql://admin:pass@host/db?sslmode=require"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")
@@ -173,7 +173,7 @@ class TestDefaultValues:
     
     def test_default_sslmode(self):
         """Should default to require SSL mode."""
-        base_url = "postgresql://admin:pass@host:25060/db"
+        base_url = "postgresql://admin:pass@host:25060/db"  # pragma: allowlist secret
         
         with patch('sys.stdout', new=StringIO()) as mock_stdout:
             generate_connection_strings(base_url, "user", "pass")

@@ -94,11 +94,11 @@ class TestExecuteCleanup:
             
             with patch('builtins.print'):
                 execute_cleanup(
-                    'postgresql://admin:testpassword@host/db',
+                    'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                     'test_client'
                 )
             
-            mock_psycopg2.connect.assert_called_once_with('postgresql://admin:testpassword@host/db')
+            mock_psycopg2.connect.assert_called_once_with('postgresql://admin:testpassword@host/db')  # pragma: allowlist secret
     
     def test_cleanup_executes_sql(self):
         """Should execute cleanup SQL statements."""
@@ -114,7 +114,7 @@ class TestExecuteCleanup:
             
             with patch('builtins.print'):
                 execute_cleanup(
-                    'postgresql://admin:testpassword@host/db',
+                    'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                     'test_client'
                 )
             
@@ -134,7 +134,7 @@ class TestExecuteCleanup:
             
             with patch('builtins.print'):
                 execute_cleanup(
-                    'postgresql://admin:testpassword@host/db',
+                    'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                     'test_client'
                 )
             
@@ -154,7 +154,7 @@ class TestExecuteCleanup:
             
             with patch('builtins.print'):
                 execute_cleanup(
-                    'postgresql://admin:testpassword@host/db',
+                    'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                     'test_client'
                 )
             
@@ -174,7 +174,7 @@ class TestExecuteCleanup:
             
             with patch('builtins.print'):
                 result = execute_cleanup(
-                    'postgresql://admin:testpassword@host/db',
+                    'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                     'test_client'
                 )
             
@@ -194,7 +194,7 @@ class TestExecuteCleanup:
             
             with patch('builtins.print'):
                 result = execute_cleanup(
-                    'postgresql://admin:testpassword@host/db',
+                    'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                     'test_client',
                     keep_user=True
                 )
@@ -279,7 +279,7 @@ class TestMainFunction:
         
         with patch('sys.argv', [
             'cleanup_client.py',
-            'postgresql://admin:testpassword@host/db',
+            'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
             'test_client',
             '--generate'
         ]):
@@ -298,7 +298,7 @@ class TestMainFunction:
         
         with patch('sys.argv', [
             'cleanup_client.py',
-            'postgresql://admin:testpassword@host/db',
+            'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
             'test_client'
         ]):
             with patch('builtins.input', return_value='n') as mock_input:
@@ -317,7 +317,7 @@ class TestMainFunction:
         
         with patch('sys.argv', [
             'cleanup_client.py',
-            'postgresql://admin:testpassword@host/db',
+            'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
             'test_client'
         ]):
             with patch('builtins.input', return_value='n'):
@@ -345,7 +345,7 @@ class TestMainFunction:
             
             with patch('sys.argv', [
                 'cleanup_client.py',
-                'postgresql://admin:testpassword@host/db',
+                'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                 'test_client'
             ]):
                 # Must type exact client name to confirm, not 'yes'
@@ -367,7 +367,7 @@ class TestMainFunction:
             
             with patch('sys.argv', [
                 'cleanup_client.py',
-                'postgresql://admin:testpassword@host/db',
+                'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                 'test_client',
                 '--confirm'
             ]):
@@ -392,7 +392,7 @@ class TestMainFunction:
             
             with patch('sys.argv', [
                 'cleanup_client.py',
-                'postgresql://admin:testpassword@host/db',
+                'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                 'test_client',
                 '--confirm',
                 '--keep-user'
@@ -414,7 +414,7 @@ class TestMainFunction:
             
             with patch('sys.argv', [
                 'cleanup_client.py',
-                'postgresql://admin:testpassword@host/db',
+                'postgresql://admin:testpassword@host/db',  # pragma: allowlist secret
                 'test_client',
                 '--confirm',
                 '--cluster-id', 'cluster-123'

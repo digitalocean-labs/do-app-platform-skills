@@ -51,7 +51,7 @@ class TestBuildConnectionString:
 
     def test_builds_valid_connection(self):
         """Should build valid PostgreSQL URL."""
-        base = "postgresql://admin:old@host:25060/db?sslmode=require"
+        base = "postgresql://admin:old@host:25060/db?sslmode=require"  # pragma: allowlist secret
         result = build_connection_string(base, "newuser", "newpass")
         assert "newuser:newpass@" in result
         assert "host:25060" in result
@@ -59,6 +59,6 @@ class TestBuildConnectionString:
 
     def test_defaults_ssl_require(self):
         """Should default to sslmode=require."""
-        base = "postgresql://admin:old@host:25060/db"
+        base = "postgresql://admin:old@host:25060/db"  # pragma: allowlist secret
         result = build_connection_string(base, "user", "pass")
         assert "sslmode=require" in result

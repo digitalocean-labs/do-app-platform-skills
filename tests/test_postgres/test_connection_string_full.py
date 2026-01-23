@@ -31,7 +31,7 @@ class TestGenerateConnectionStrings:
             generate_connection_strings(
                 base_url='postgresql://doadmin:adminpass@db-host.ondigitalocean.com:25060/defaultdb?sslmode=require',  # pragma: allowlist secret
                 username='testuser',
-                password='testpassword123'
+                password='testpassword123'  # pragma: allowlist secret
             )
         
         # Verify print was called
@@ -212,7 +212,7 @@ class TestMainFunction:
             'generate_connection_string.py',
             'postgresql://doadmin:pass@host:25060/db?sslmode=require',  # pragma: allowlist secret
             'testuser',
-            'testpassword123'
+            'testpassword123'  # pragma: allowlist secret
         ]):
             with patch('builtins.print') as mock_print:
                 generate_connection_string.main()
@@ -228,7 +228,7 @@ class TestMainFunction:
             'generate_connection_string.py',
             'postgresql://doadmin:pass@host:25060/db?sslmode=require',  # pragma: allowlist secret
             'testuser',
-            'testpassword123',
+            'testpassword123',  # pragma: allowlist secret
             '--schema', 'myschema'
         ]):
             with patch('builtins.print') as mock_print:

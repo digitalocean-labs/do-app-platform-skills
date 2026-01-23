@@ -28,7 +28,7 @@ class TestListSchemasUsersFunction:
         with patch.dict('sys.modules', {'psycopg2': None}):
             with patch('builtins.__import__', side_effect=ImportError("No module named 'psycopg2'")):
                 with pytest.raises(SystemExit):
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
     
     def test_connects_to_database(self):
         """Should attempt to connect with provided connection string."""
@@ -44,7 +44,7 @@ class TestListSchemasUsersFunction:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host:25060/db")
+                    list_schemas_users("postgresql://user:pass@host:25060/db")  # pragma: allowlist secret
                 except:
                     pass  # May fail on cursor operations, that's OK
             
@@ -67,7 +67,7 @@ class TestListSchemasUsersFunction:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
@@ -88,7 +88,7 @@ class TestListSchemasUsersFunction:
             
             with patch('builtins.print'):
                 try:
-                    list_schemas_users("postgresql://user:pass@host/db")
+                    list_schemas_users("postgresql://user:pass@host/db")  # pragma: allowlist secret
                 except:
                     pass
             
