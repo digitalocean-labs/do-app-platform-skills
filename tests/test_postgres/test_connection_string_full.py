@@ -1,9 +1,10 @@
-"""Comprehensive tests for connection_string.py - Full coverage."""
+"""Comprehensive tests for generate_connection_string.py - Full coverage."""
 
 import os
 import sys
 import pytest
 from unittest.mock import patch, MagicMock
+from io import StringIO
 
 # Add scripts to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../skills/postgres/scripts'))
@@ -14,243 +15,227 @@ class TestConnectionStringImports:
     
     def test_module_imports(self):
         """Module should import without errors."""
-        import connection_string
-        assert hasattr(connection_string, 'generate_connection_string')
+        import generate_connection_string
+        assert hasattr(generate_connection_string, 'generate_connection_strings')
+        assert hasattr(generate_connection_string, 'main')
 
 
-class TestGenerateConnectionString:
+class TestGenerateConnectionStrings:
     """Tests for connection string generation."""
     
     def test_basic_connection_string(self):
-        """Should generate basic connection string."""
-        from connection_string import generate_connection_string
+        """Should generate basic connection string output."""
+        from generate_connection_string import generate_connection_strings
         
-        conn = generate_connection_string(
-            host='db-postgresql-nyc1-12345-do-user.b.db.ondigitalocean.com',
-            port=25060,
-            database='defaultdb',
-            user='doadmin',
-            password='secret123'
-        )
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:adminpass@db-host.ondigitalocean.com:25060/defaultdb?sslmode=require',
+                username='testuser',
+                password='testpassword123'
+            )
         
-        assert 'postgresql://' in conn
-        assert 'doadmin' in conn
-        assert '25060' in conn
-        assert 'defaultdb' in conn
+        # Verify print was called
+        assert mock_print.called
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'testuser' in printed_output
     
     def test_includes_sslmode(self):
-        """Should include sslmode=require."""
-        from connection_string import generate_connection_string
+        """Should include sslmode in connection string."""
+        from generate_connection_string import generate_connection_strings
         
-        conn = generate_connection_string(
-            host='host.db.ondigitalocean.com',
-            port=25060,
-            database='db',
-            user='user',
-            password='pass'
-        )
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                username='user',
+                password='pass'
+            )
         
-        assert 'sslmode=require' in conn
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'sslmode=require' in printed_output
     
     def test_url_encodes_password(self):
         """Should URL-encode special characters in password."""
-        from connection_string import generate_connection_string
+        from generate_connection_string import generate_connection_strings
         
-        conn = generate_connection_string(
-            host='host.db.ondigitalocean.com',
-            port=25060,
-            database='db',
-            user='user',
-            password='p@ss:word/with?special&chars='
-        )
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                username='user',
+                password='p@ss:word/with?special&chars='
+            )
         
-        # Password should be encoded, not contain raw special chars
-        # The @ in password should be encoded as %40
-        assert '%40' in conn or '%3A' in conn or '%2F' in conn or 'password' not in conn.split('@')[0]
-    
-    def test_handles_empty_password(self):
-        """Should handle empty password."""
-        from connection_string import generate_connection_string
-        
-        conn = generate_connection_string(
-            host='host.db.ondigitalocean.com',
-            port=25060,
-            database='db',
-            user='user',
-            password=''
-        )
-        
-        # Should still generate valid string
-        assert 'postgresql://' in conn
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        # URL-encoded special characters should appear
+        assert '%40' in printed_output or '%3A' in printed_output or '%2F' in printed_output
     
     def test_custom_schema(self):
         """Should support custom schema in search_path."""
-        from connection_string import generate_connection_string
+        from generate_connection_string import generate_connection_strings
         
-        conn = generate_connection_string(
-            host='host.db.ondigitalocean.com',
-            port=25060,
-            database='db',
-            user='user',
-            password='pass',
-            options={'search_path': 'myschema'}
-        )
-        
-        # May include options or search_path
-        assert 'postgresql://' in conn
-
-
-class TestPoolConnectionString:
-    """Tests for connection pool connection strings."""
-    
-    def test_pool_connection_string(self):
-        """Should generate pool connection string."""
-        import connection_string
-        
-        if hasattr(connection_string, 'generate_pool_connection_string'):
-            conn = connection_string.generate_pool_connection_string(
-                host='pool-host.db.ondigitalocean.com',
-                port=25061,  # Pool port
-                database='db',
-                user='user',
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                username='user',
                 password='pass',
-                pool_name='mypool'
+                schema='myschema'
             )
-            
-            assert 'postgresql://' in conn
-            assert '25061' in conn
-    
-    def test_pool_mode_transaction(self):
-        """Should support transaction pooling mode."""
-        import connection_string
         
-        if hasattr(connection_string, 'generate_pool_connection_string'):
-            conn = connection_string.generate_pool_connection_string(
-                host='host.db.ondigitalocean.com',
-                port=25061,
-                database='db',
-                user='user',
-                password='pass',
-                pool_mode='transaction'
-            )
-            
-            # May include pool mode parameter
-            assert 'postgresql://' in conn
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'myschema' in printed_output
 
 
 class TestConnectionStringFormats:
-    """Tests for different connection string formats."""
+    """Tests for different connection string format outputs."""
     
-    def test_jdbc_format(self):
-        """Should support JDBC format."""
-        import connection_string
+    def test_outputs_env_vars(self):
+        """Should output environment variable format."""
+        from generate_connection_string import generate_connection_strings
         
-        if hasattr(connection_string, 'generate_connection_string'):
-            conn = connection_string.generate_connection_string(
-                host='host.db.ondigitalocean.com',
-                port=25060,
-                database='db',
-                user='user',
-                password='pass',
-                format='jdbc'
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host.db.ondigitalocean.com:25060/db?sslmode=require',
+                username='user',
+                password='pass'
             )
-            
-            # May be JDBC format or standard
-            assert 'jdbc:' in conn or 'postgresql://' in conn
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'DATABASE_URL' in printed_output
+        assert 'DB_HOST' in printed_output
+        assert 'DB_PORT' in printed_output
     
-    def test_libpq_format(self):
-        """Should support libpq keyword format."""
-        import connection_string
+    def test_outputs_psql_command(self):
+        """Should output psql command."""
+        from generate_connection_string import generate_connection_strings
         
-        if hasattr(connection_string, 'generate_connection_string'):
-            conn = connection_string.generate_connection_string(
-                host='host.db.ondigitalocean.com',
-                port=25060,
-                database='db',
-                user='user',
-                password='pass',
-                format='libpq'
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                username='user',
+                password='pass'
             )
-            
-            # May be keyword format or URI
-            assert 'host=' in conn or 'postgresql://' in conn
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'psql' in printed_output
+    
+    def test_outputs_prisma_format(self):
+        """Should output Prisma format."""
+        from generate_connection_string import generate_connection_strings
+        
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                username='user',
+                password='pass'
+            )
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'Prisma' in printed_output
+    
+    def test_outputs_sqlalchemy_format(self):
+        """Should output SQLAlchemy format."""
+        from generate_connection_string import generate_connection_strings
+        
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                username='user',
+                password='pass'
+            )
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'SQLAlchemy' in printed_output
 
 
-class TestParseConnectionString:
-    """Tests for parsing connection strings."""
+class TestEdgeCases:
+    """Tests for edge cases."""
     
-    def test_parses_uri_format(self):
-        """Should parse URI format connection string."""
-        import connection_string
+    def test_handles_default_port(self):
+        """Should handle URLs without explicit port."""
+        from generate_connection_string import generate_connection_strings
         
-        if hasattr(connection_string, 'parse_connection_string'):
-            result = connection_string.parse_connection_string(
-                'postgresql://user:pass@host:25060/db?sslmode=require'
+        with patch('builtins.print') as mock_print:
+            # URL without port should default to 25060
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host/db?sslmode=require',
+                username='user',
+                password='pass'
             )
-            
-            assert result['host'] == 'host'
-            assert result['port'] == 25060 or result['port'] == '25060'
-            assert result['user'] == 'user'
-            assert result['database'] == 'db'
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert '25060' in printed_output
     
-    def test_parses_encoded_password(self):
-        """Should decode URL-encoded password."""
-        import connection_string
+    def test_handles_default_database(self):
+        """Should handle URLs without database name."""
+        from generate_connection_string import generate_connection_strings
         
-        if hasattr(connection_string, 'parse_connection_string'):
-            result = connection_string.parse_connection_string(
-                'postgresql://user:p%40ss%3Aword@host:25060/db'
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/?sslmode=require',
+                username='user',
+                password='pass'
             )
-            
-            assert result['password'] == 'p@ss:word' or '%40' not in result.get('password', '')
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'defaultdb' in printed_output
+    
+    def test_handles_missing_sslmode(self):
+        """Should default sslmode to require if not specified."""
+        from generate_connection_string import generate_connection_strings
+        
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@host:25060/db',
+                username='user',
+                password='pass'
+            )
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'sslmode=require' in printed_output
 
 
 class TestMainFunction:
     """Tests for main entry point."""
     
-    def test_main_outputs_connection_string(self):
-        """Should output connection string."""
-        import connection_string
+    def test_main_requires_arguments(self):
+        """Should exit if required arguments missing."""
+        import generate_connection_string
         
-        if hasattr(connection_string, 'main'):
-            with patch('sys.argv', [
-                'connection_string.py',
-                '--host', 'host.db.ondigitalocean.com',
-                '--port', '25060',
-                '--database', 'db',
-                '--user', 'user',
-                '--password', 'pass'
-            ]):
-                with patch('builtins.print') as mock_print:
-                    try:
-                        connection_string.main()
-                    except SystemExit:
-                        pass
-                    
-                    if mock_print.called:
-                        output = str(mock_print.call_args)
-                        assert 'postgresql' in output.lower()
+        with patch('sys.argv', ['generate_connection_string.py']):
+            with pytest.raises(SystemExit):
+                generate_connection_string.main()
     
-    def test_main_from_env_vars(self):
-        """Should build connection string from environment variables."""
-        import connection_string
+    def test_main_with_valid_arguments(self):
+        """Should run with valid arguments."""
+        import generate_connection_string
         
-        if hasattr(connection_string, 'main'):
-            env = {
-                'PGHOST': 'host.db.ondigitalocean.com',
-                'PGPORT': '25060',
-                'PGDATABASE': 'db',
-                'PGUSER': 'user',
-                'PGPASSWORD': 'pass'
-            }
-            
-            with patch('sys.argv', ['connection_string.py', '--from-env']):
-                with patch.dict(os.environ, env):
-                    with patch('builtins.print') as mock_print:
-                        try:
-                            connection_string.main()
-                        except SystemExit:
-                            pass
+        with patch('sys.argv', [
+            'generate_connection_string.py',
+            'postgresql://doadmin:pass@host:25060/db?sslmode=require',
+            'testuser',
+            'testpassword123'
+        ]):
+            with patch('builtins.print') as mock_print:
+                generate_connection_string.main()
+                
+                printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+                assert 'testuser' in printed_output
+    
+    def test_main_with_schema_argument(self):
+        """Should accept schema argument."""
+        import generate_connection_string
+        
+        with patch('sys.argv', [
+            'generate_connection_string.py',
+            'postgresql://doadmin:pass@host:25060/db?sslmode=require',
+            'testuser',
+            'testpassword123',
+            '--schema', 'myschema'
+        ]):
+            with patch('builtins.print') as mock_print:
+                generate_connection_string.main()
+                
+                printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+                assert 'myschema' in printed_output
 
 
 class TestDOConnectionString:
@@ -258,33 +243,29 @@ class TestDOConnectionString:
     
     def test_do_managed_database_format(self):
         """Should handle DO managed database format."""
-        from connection_string import generate_connection_string
+        from generate_connection_string import generate_connection_strings
         
-        conn = generate_connection_string(
-            host='localhost',
-            port=25060,
-            database='defaultdb',
-            user='doadmin',
-            password='FAKE_TEST_PASSWORD_12345'
-        )
-        
-        assert 'postgresql://' in conn
-        assert 'doadmin' in conn
-        assert 'FAKE_TEST_PASSWORD' in conn or 'password' not in conn.split('@')[0]
-    
-    def test_ca_certificate_option(self):
-        """Should support CA certificate option."""
-        import connection_string
-        
-        if hasattr(connection_string, 'generate_connection_string'):
-            conn = connection_string.generate_connection_string(
-                host='host.db.ondigitalocean.com',
-                port=25060,
-                database='db',
-                user='user',
-                password='pass',
-                sslrootcert='/path/to/ca-certificate.crt'
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:adminpass@db-postgresql-nyc1-12345-do-user-123456-0.b.db.ondigitalocean.com:25060/defaultdb?sslmode=require',
+                username='myapp_user',
+                password='FAKE_TEST_PASSWORD_12345'
             )
-            
-            # May include sslrootcert
-            assert 'postgresql://' in conn
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'postgresql://' in printed_output
+        assert 'myapp_user' in printed_output
+    
+    def test_preserves_do_host(self):
+        """Should preserve the DO hostname."""
+        from generate_connection_string import generate_connection_strings
+        
+        with patch('builtins.print') as mock_print:
+            generate_connection_strings(
+                base_url='postgresql://doadmin:pass@my-db-host.db.ondigitalocean.com:25060/db?sslmode=require',
+                username='user',
+                password='pass'
+            )
+        
+        printed_output = ' '.join(str(call) for call in mock_print.call_args_list)
+        assert 'my-db-host.db.ondigitalocean.com' in printed_output

@@ -8,6 +8,8 @@ from unittest.mock import patch, MagicMock
 # Add scripts to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../skills/migration/scripts'))
 
+from generate_checklist import generate_checklist, main
+
 
 class TestGenerateChecklistImports:
     """Tests for module imports."""
@@ -16,319 +18,253 @@ class TestGenerateChecklistImports:
         """Module should import without errors."""
         import generate_checklist
         assert hasattr(generate_checklist, 'generate_checklist')
+        assert hasattr(generate_checklist, 'main')
 
 
 class TestChecklistGeneration:
     """Tests for checklist generation."""
     
-    def test_generates_checklist_for_heroku(self):
-        """Should generate migration checklist for Heroku."""
-        from generate_checklist import generate_checklist
+    def test_generates_checklist_for_heroku(self, tmp_path):
+        """Should generate migration checklist for Heroku project."""
+        (tmp_path / 'Procfile').write_text('web: gunicorn app:app')
+        (tmp_path / 'requirements.txt').write_text('flask==2.0.0\ngunicorn==20.0.0')
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'services': [{'name': 'web', 'type': 'web'}],
-                'addons': ['heroku-postgresql']
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'myapp')
         
-        assert len(checklist) > 0
-        assert any('database' in item.lower() for item in checklist) or len(checklist) > 0
+        assert isinstance(result, str)
+        assert len(result) > 0
     
-    def test_generates_checklist_for_render(self):
-        """Should generate migration checklist for Render."""
-        from generate_checklist import generate_checklist
+    def test_generates_checklist_for_render(self, tmp_path):
+        """Should generate migration checklist for Render project."""
+        (tmp_path / 'render.yaml').write_text('services:\n  - type: web\n')
+        (tmp_path / 'app.py').touch()
+        (tmp_path / 'requirements.txt').touch()
         
-        checklist = generate_checklist(
-            source_platform='render',
-            project_info={
-                'services': [{'name': 'api', 'type': 'web'}]
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'renderapp')
         
-        assert len(checklist) > 0
+        assert isinstance(result, str)
+        assert len(result) > 0
     
-    def test_includes_environment_variables(self):
-        """Should include env var migration tasks."""
-        from generate_checklist import generate_checklist
+    def test_includes_app_name(self, tmp_path):
+        """Should include app name in checklist."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'env_vars': ['DATABASE_URL', 'REDIS_URL', 'SECRET_KEY']
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'testapp123')
         
-        # Should have env-related items
-        checklist_text = ' '.join(str(item) for item in checklist)
-        assert 'environment' in checklist_text.lower() or 'variable' in checklist_text.lower() or len(checklist) > 0
+        assert 'testapp123' in result
     
-    def test_includes_database_migration(self):
-        """Should include database migration tasks."""
-        from generate_checklist import generate_checklist
+    def test_includes_platform_info(self, tmp_path):
+        """Should include detected platform information."""
+        (tmp_path / 'Procfile').write_text('web: gunicorn app:app')
+        (tmp_path / 'requirements.txt').touch()
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'databases': [{'type': 'postgresql', 'name': 'db'}]
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'myapp')
         
-        checklist_text = ' '.join(str(item) for item in checklist)
-        assert 'database' in checklist_text.lower() or 'data' in checklist_text.lower() or len(checklist) > 0
+        # Should mention platform or migration
+        assert 'Platform' in result or 'Migration' in result or 'Heroku' in result
 
 
-class TestChecklistCategories:
-    """Tests for checklist category organization."""
+class TestChecklistWithOptionalParams:
+    """Tests for optional parameters."""
     
-    def test_categorizes_tasks(self):
-        """Should categorize tasks appropriately."""
-        from generate_checklist import generate_checklist
+    def test_with_repo_url(self, tmp_path):
+        """Should accept repo_url parameter."""
+        (tmp_path / 'app.py').touch()
+        (tmp_path / 'requirements.txt').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'services': [{'name': 'web', 'type': 'web'}],
-                'databases': [{'type': 'postgresql'}],
-                'env_vars': ['DATABASE_URL']
-            }
+        result = generate_checklist(
+            str(tmp_path), 
+            'myapp',
+            repo_url='https://github.com/example/repo'
         )
         
-        # Should have multiple categories or items
-        assert len(checklist) >= 1
+        assert isinstance(result, str)
     
-    def test_includes_pre_migration_tasks(self):
-        """Should include pre-migration preparation tasks."""
-        from generate_checklist import generate_checklist
+    def test_with_custom_branches(self, tmp_path):
+        """Should accept custom branch names."""
+        (tmp_path / 'app.py').touch()
+        (tmp_path / 'requirements.txt').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={'services': [{'name': 'web'}]}
+        result = generate_checklist(
+            str(tmp_path), 
+            'myapp',
+            test_branch='staging',
+            prod_branch='main'
         )
         
-        # Should have preparation tasks
-        checklist_text = ' '.join(str(item) for item in checklist).lower()
-        assert 'backup' in checklist_text or 'prepare' in checklist_text or len(checklist) > 0
+        assert isinstance(result, str)
+
+
+class TestChecklistContent:
+    """Tests for checklist content."""
     
-    def test_includes_post_migration_tasks(self):
-        """Should include post-migration verification tasks."""
-        from generate_checklist import generate_checklist
+    def test_contains_migration_header(self, tmp_path):
+        """Should contain migration header."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={'services': [{'name': 'web'}]}
-        )
+        result = generate_checklist(str(tmp_path), 'myapp')
         
-        # Should have verification tasks
-        checklist_text = ' '.join(str(item) for item in checklist).lower()
-        assert 'verify' in checklist_text or 'test' in checklist_text or 'dns' in checklist_text or len(checklist) > 0
-
-
-class TestPlatformSpecificItems:
-    """Tests for platform-specific checklist items."""
+        # Should have markdown header
+        assert '#' in result or 'Migration' in result
     
-    def test_heroku_specific_items(self):
-        """Should include Heroku-specific migration items."""
-        from generate_checklist import generate_checklist
+    def test_contains_summary_section(self, tmp_path):
+        """Should contain summary section."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'addons': ['heroku-redis', 'papertrail']
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'myapp')
         
-        # Should have items related to Heroku addons
-        assert len(checklist) > 0
+        # Should have summary or table
+        assert 'Summary' in result or '|' in result
+
+
+class TestChecklistWithDatabase:
+    """Tests for checklist with database detection."""
     
-    def test_render_specific_items(self):
-        """Should include Render-specific migration items."""
-        from generate_checklist import generate_checklist
+    def test_database_app_checklist(self, tmp_path):
+        """Should handle apps with database dependencies."""
+        (tmp_path / 'requirements.txt').write_text('flask==2.0.0\npsycopg2==2.9.0')
+        (tmp_path / 'Procfile').write_text('web: gunicorn app:app')
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='render',
-            project_info={
-                'services': [{'type': 'web', 'autoscaling': True}]
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'dbapp')
         
-        assert len(checklist) > 0
+        assert isinstance(result, str)
+
+
+class TestChecklistWithWorkers:
+    """Tests for checklist with worker detection."""
     
-    def test_fly_specific_items(self):
-        """Should include Fly.io-specific migration items."""
-        from generate_checklist import generate_checklist
+    def test_worker_app_checklist(self, tmp_path):
+        """Should handle apps with workers."""
+        (tmp_path / 'Procfile').write_text('web: gunicorn app:app\nworker: celery -A tasks worker')
+        (tmp_path / 'requirements.txt').write_text('celery==5.0.0')
+        (tmp_path / 'app.py').touch()
         
-        checklist = generate_checklist(
-            source_platform='fly',
-            project_info={
-                'regions': ['ewr', 'lax'],
-                'volumes': ['data']
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'workerapp')
         
-        assert len(checklist) > 0
+        assert isinstance(result, str)
 
 
-class TestDNSMigration:
-    """Tests for DNS migration items."""
+class TestChecklistErrorHandling:
+    """Tests for error handling in checklist generation."""
     
-    def test_includes_dns_items_with_domain(self):
-        """Should include DNS items when domain is configured."""
-        from generate_checklist import generate_checklist
+    def test_handles_minimal_project(self, tmp_path):
+        """Should handle minimal project."""
+        (tmp_path / 'README.md').write_text('# Empty project')
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'domains': ['myapp.com', 'www.myapp.com']
-            }
-        )
-        
-        checklist_text = ' '.join(str(item) for item in checklist).lower()
-        assert 'dns' in checklist_text or 'domain' in checklist_text or len(checklist) > 0
-
-
-class TestStaticSiteMigration:
-    """Tests for static site migration."""
+        # Should not crash
+        result = generate_checklist(str(tmp_path), 'emptyapp')
+        assert isinstance(result, str)
     
-    def test_static_site_checklist(self):
-        """Should generate appropriate checklist for static sites."""
-        from generate_checklist import generate_checklist
-        
-        checklist = generate_checklist(
-            source_platform='netlify',
-            project_info={
-                'type': 'static',
-                'build_command': 'npm run build',
-                'output_dir': 'dist'
-            }
-        )
-        
-        assert len(checklist) > 0
-
-
-class TestWorkerMigration:
-    """Tests for worker/background job migration."""
-    
-    def test_worker_checklist(self):
-        """Should include worker migration items."""
-        from generate_checklist import generate_checklist
-        
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'services': [
-                    {'name': 'web', 'type': 'web'},
-                    {'name': 'worker', 'type': 'worker'}
-                ]
-            }
-        )
-        
-        checklist_text = ' '.join(str(item) for item in checklist).lower()
-        assert 'worker' in checklist_text or len(checklist) > 2
-
-
-class TestMarkdownOutput:
-    """Tests for markdown output formatting."""
-    
-    def test_outputs_markdown(self):
-        """Should output checklist as markdown."""
-        from generate_checklist import output_checklist
-        
-        checklist = [
-            {'category': 'Preparation', 'items': ['Backup database', 'Export config']},
-            {'category': 'Migration', 'items': ['Deploy to DO', 'Update DNS']}
-        ]
-        
-        with patch('builtins.print') as mock_print:
-            output_checklist(checklist, format='markdown')
-            
-            if mock_print.called:
-                output = ' '.join(str(c) for c in mock_print.call_args_list)
-                # Should have markdown formatting
-                assert '#' in output or '-' in output or '[' in output or mock_print.called
-    
-    def test_outputs_plain_text(self):
-        """Should output checklist as plain text."""
-        from generate_checklist import output_checklist
-        
-        checklist = [
-            {'category': 'Tasks', 'items': ['Task 1', 'Task 2']}
-        ]
-        
-        with patch('builtins.print') as mock_print:
-            output_checklist(checklist, format='text')
-            
-            assert mock_print.called
+    def test_handles_invalid_path(self):
+        """Should handle invalid path."""
+        with pytest.raises((ValueError, FileNotFoundError, Exception)):
+            generate_checklist('/nonexistent/path/12345', 'app')
 
 
 class TestMainFunction:
     """Tests for main entry point."""
     
-    def test_main_requires_platform(self):
-        """Should require source platform."""
-        import generate_checklist
-        
-        if hasattr(generate_checklist, 'main'):
-            with patch('sys.argv', ['generate_checklist.py']):
-                with pytest.raises(SystemExit):
-                    generate_checklist.main()
+    def test_main_requires_arguments(self):
+        """Should require arguments."""
+        with patch('sys.argv', ['generate_checklist.py']):
+            with pytest.raises(SystemExit):
+                main()
     
-    def test_main_with_platform(self, tmp_path):
-        """Should generate checklist with platform argument."""
-        import generate_checklist
+    def test_main_generates_checklist(self, tmp_path, capsys):
+        """Should generate checklist output."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        (tmp_path / 'app.py').touch()
         
-        (tmp_path / 'Procfile').write_text('web: npm start')
+        with patch('sys.argv', ['generate_checklist.py', str(tmp_path), '--name', 'testapp']):
+            main()
         
-        if hasattr(generate_checklist, 'main'):
-            with patch('sys.argv', [
-                'generate_checklist.py',
-                '--source', 'heroku',
-                '--directory', str(tmp_path)
-            ]):
-                with patch('builtins.print'):
-                    try:
-                        generate_checklist.main()
-                    except SystemExit:
-                        pass
+        captured = capsys.readouterr()
+        assert 'testapp' in captured.out or 'Migration' in captured.out
     
-    def test_main_output_to_file(self, tmp_path):
-        """Should write checklist to file when specified."""
-        import generate_checklist
+    def test_main_with_repo_url(self, tmp_path, capsys):
+        """Should accept repo URL option."""
+        (tmp_path / 'app.py').touch()
+        (tmp_path / 'requirements.txt').touch()
         
-        output_file = tmp_path / 'checklist.md'
+        with patch('sys.argv', [
+            'generate_checklist.py', str(tmp_path), 
+            '--name', 'testapp',
+            '--repo-url', 'https://github.com/example/repo'
+        ]):
+            main()
         
-        if hasattr(generate_checklist, 'main'):
-            with patch('sys.argv', [
-                'generate_checklist.py',
-                '--source', 'heroku',
-                '--output', str(output_file)
-            ]):
-                with patch('builtins.print'):
-                    with patch('builtins.open', MagicMock()) as mock_open:
-                        try:
-                            generate_checklist.main()
-                        except SystemExit:
-                            pass
+        captured = capsys.readouterr()
+        assert captured.out is not None
+    
+    def test_main_with_invalid_repo(self):
+        """Should handle invalid repo path."""
+        with patch('sys.argv', ['generate_checklist.py', '/nonexistent/path', '--name', 'app']):
+            with pytest.raises((SystemExit, Exception)):
+                main()
 
 
-class TestChecklistPriority:
-    """Tests for task priority ordering."""
+class TestChecklistPlatformSpecific:
+    """Tests for platform-specific checklist items."""
     
-    def test_critical_tasks_first(self):
-        """Should list critical tasks before optional ones."""
-        from generate_checklist import generate_checklist
+    def test_fly_project_checklist(self, tmp_path):
+        """Should handle Fly.io project."""
+        (tmp_path / 'fly.toml').write_text('app = "myapp"\nprimary_region = "ord"')
+        (tmp_path / 'app.py').touch()
+        (tmp_path / 'requirements.txt').touch()
         
-        checklist = generate_checklist(
-            source_platform='heroku',
-            project_info={
-                'services': [{'name': 'web'}],
-                'databases': [{'type': 'postgresql'}]
-            }
-        )
+        result = generate_checklist(str(tmp_path), 'flyapp')
         
-        # First items should be more critical
-        if len(checklist) > 0:
-            first_items = checklist[:3] if len(checklist) >= 3 else checklist
-            # Critical items like backup should be early
-            assert len(first_items) > 0
+        assert isinstance(result, str)
+    
+    def test_docker_compose_project_checklist(self, tmp_path):
+        """Should handle docker-compose project."""
+        (tmp_path / 'docker-compose.yml').write_text("version: '3'\nservices:\n  web:\n    build: .")
+        (tmp_path / 'Dockerfile').write_text('FROM python:3.11')
+        (tmp_path / 'app.py').touch()
+        
+        result = generate_checklist(str(tmp_path), 'dockerapp')
+        
+        assert isinstance(result, str)
+
+
+class TestChecklistMarkdownOutput:
+    """Tests for markdown output format."""
+    
+    def test_outputs_markdown(self, tmp_path):
+        """Should output valid markdown."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        (tmp_path / 'app.py').touch()
+        
+        result = generate_checklist(str(tmp_path), 'myapp')
+        
+        # Should have markdown elements
+        assert '#' in result  # Headers
+    
+    def test_includes_checkboxes_or_lists(self, tmp_path):
+        """Should include task items."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        (tmp_path / 'app.py').touch()
+        
+        result = generate_checklist(str(tmp_path), 'myapp')
+        
+        # May include checkbox markers [ ] or list markers -
+        assert isinstance(result, str)
+
+
+class TestChecklistStaticSite:
+    """Tests for static site migration checklist."""
+    
+    def test_static_site_checklist(self, tmp_path):
+        """Should handle static site project."""
+        (tmp_path / 'index.html').write_text('<html></html>')
+        (tmp_path / 'package.json').write_text('{"scripts": {"build": "vite build"}}')
+        
+        result = generate_checklist(str(tmp_path), 'staticapp')
+        
+        assert isinstance(result, str)

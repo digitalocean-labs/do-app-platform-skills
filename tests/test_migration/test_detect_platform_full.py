@@ -3,10 +3,13 @@
 import os
 import sys
 import pytest
+import json
 from unittest.mock import patch, MagicMock
 
 # Add scripts to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../skills/migration/scripts'))
+
+from detect_platform import PlatformDetector, main
 
 
 class TestDetectPlatformImports:
@@ -15,7 +18,23 @@ class TestDetectPlatformImports:
     def test_module_imports(self):
         """Module should import without errors."""
         import detect_platform
-        assert hasattr(detect_platform, 'detect_platform')
+        assert hasattr(detect_platform, 'PlatformDetector')
+        assert hasattr(detect_platform, 'main')
+
+
+class TestPlatformDetectorInit:
+    """Tests for PlatformDetector initialization."""
+    
+    def test_init_with_valid_path(self, tmp_path):
+        """Should initialize with valid path."""
+        (tmp_path / 'app.py').touch()
+        detector = PlatformDetector(str(tmp_path))
+        assert detector.repo_path == tmp_path
+    
+    def test_init_with_invalid_path(self):
+        """Should raise error for invalid path."""
+        with pytest.raises(ValueError, match="does not exist"):
+            PlatformDetector('/nonexistent/path/12345')
 
 
 class TestHerokuDetection:
@@ -23,24 +42,21 @@ class TestHerokuDetection:
     
     def test_detects_heroku_by_procfile(self, tmp_path):
         """Should detect Heroku by Procfile."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'Procfile').write_text('web: npm start')
-        (tmp_path / 'app.json').write_text('{"name": "test"}')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        assert result == 'heroku' or 'heroku' in str(result).lower()
+        assert result['primary_platform'] == 'heroku'
     
     def test_detects_heroku_by_app_json(self, tmp_path):
         """Should detect Heroku by app.json."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'app.json').write_text('{"formation": {"web": {"quantity": 1}}}')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        assert result == 'heroku' or 'heroku' in str(result).lower() or result is not None
+        assert result['primary_platform'] == 'heroku'
 
 
 class TestRenderDetection:
@@ -48,13 +64,21 @@ class TestRenderDetection:
     
     def test_detects_render_by_yaml(self, tmp_path):
         """Should detect Render by render.yaml."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'render.yaml').write_text('services:\n  - type: web')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        assert result == 'render' or 'render' in str(result).lower()
+        assert result['primary_platform'] == 'render'
+    
+    def test_detects_render_by_yml(self, tmp_path):
+        """Should detect Render by render.yml."""
+        (tmp_path / 'render.yml').write_text('services:\n  - type: web')
+        
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
+        
+        assert result['primary_platform'] == 'render'
 
 
 class TestFlyDetection:
@@ -62,13 +86,12 @@ class TestFlyDetection:
     
     def test_detects_fly_by_toml(self, tmp_path):
         """Should detect Fly.io by fly.toml."""
-        from detect_platform import detect_platform
+        (tmp_path / 'fly.toml').write_text('app = "my-app"\nprimary_region = "ord"')
         
-        (tmp_path / 'fly.toml').write_text('app = "my-app"')
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        result = detect_platform(str(tmp_path))
-        
-        assert result == 'fly' or 'fly' in str(result).lower()
+        assert result['primary_platform'] == 'fly'
 
 
 class TestRailwayDetection:
@@ -76,24 +99,21 @@ class TestRailwayDetection:
     
     def test_detects_railway_by_json(self, tmp_path):
         """Should detect Railway by railway.json."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'railway.json').write_text('{"build": {}}')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        assert result == 'railway' or 'railway' in str(result).lower() or result is not None
+        assert result['primary_platform'] == 'railway'
     
     def test_detects_railway_by_toml(self, tmp_path):
         """Should detect Railway by railway.toml."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'railway.toml').write_text('[build]')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        # May or may not detect as Railway
-        assert result is not None or result is None
+        assert result['primary_platform'] == 'railway'
 
 
 class TestDockerDetection:
@@ -101,90 +121,43 @@ class TestDockerDetection:
     
     def test_detects_docker_compose(self, tmp_path):
         """Should detect Docker Compose."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'docker-compose.yml').write_text('services:\n  web:\n    build: .')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        assert result == 'docker' or 'docker' in str(result).lower() or 'compose' in str(result).lower()
+        assert result['primary_platform'] == 'docker_compose'
     
     def test_detects_dockerfile(self, tmp_path):
-        """Should detect Dockerfile."""
-        from detect_platform import detect_platform
-        
+        """Should detect generic Dockerfile."""
         (tmp_path / 'Dockerfile').write_text('FROM node:18')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        # May return docker or unknown
-        assert result is not None or result is None
+        assert result['primary_platform'] == 'generic_docker'
 
 
 class TestAWSDetection:
     """Tests for AWS platform detection."""
     
-    def test_detects_aws_copilot(self, tmp_path):
-        """Should detect AWS Copilot."""
-        from detect_platform import detect_platform
+    def test_detects_aws_apprunner(self, tmp_path):
+        """Should detect AWS App Runner."""
+        (tmp_path / 'apprunner.yaml').write_text('version: 1.0\nruntime: python3')
         
-        (tmp_path / 'copilot').mkdir()
-        (tmp_path / 'copilot' / 'manifest.yml').write_text('name: api')
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        result = detect_platform(str(tmp_path))
-        
-        # May detect as AWS or unknown
-        assert result is not None or result is None
+        assert result['primary_platform'] == 'aws_apprunner'
     
-    def test_detects_aws_sam(self, tmp_path):
-        """Should detect AWS SAM."""
-        from detect_platform import detect_platform
+    def test_detects_aws_beanstalk(self, tmp_path):
+        """Should detect AWS Elastic Beanstalk."""
+        (tmp_path / 'Dockerrun.aws.json').write_text('{"AWSEBDockerrunVersion": "1"}')
         
-        (tmp_path / 'template.yaml').write_text('AWSTemplateFormatVersion: "2010-09-09"\nTransform: AWS::Serverless-2016-10-31')
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        result = detect_platform(str(tmp_path))
-        
-        # May detect as AWS or serverless
-        assert result is not None or result is None
-
-
-class TestVercelDetection:
-    """Tests for Vercel platform detection."""
-    
-    def test_detects_vercel_by_json(self, tmp_path):
-        """Should detect Vercel by vercel.json."""
-        from detect_platform import detect_platform
-        
-        (tmp_path / 'vercel.json').write_text('{"version": 2}')
-        
-        result = detect_platform(str(tmp_path))
-        
-        assert result == 'vercel' or 'vercel' in str(result).lower() or result is not None
-    
-    def test_detects_vercel_by_now_json(self, tmp_path):
-        """Should detect Vercel by now.json (legacy)."""
-        from detect_platform import detect_platform
-        
-        (tmp_path / 'now.json').write_text('{"version": 2}')
-        
-        result = detect_platform(str(tmp_path))
-        
-        # May detect as Vercel or not
-        assert result is not None or result is None
-
-
-class TestNetlifyDetection:
-    """Tests for Netlify platform detection."""
-    
-    def test_detects_netlify_by_toml(self, tmp_path):
-        """Should detect Netlify by netlify.toml."""
-        from detect_platform import detect_platform
-        
-        (tmp_path / 'netlify.toml').write_text('[build]\n  command = "npm run build"')
-        
-        result = detect_platform(str(tmp_path))
-        
-        assert result == 'netlify' or 'netlify' in str(result).lower() or result is not None
+        assert result['primary_platform'] == 'aws_beanstalk'
 
 
 class TestPlatformPriority:
@@ -192,28 +165,26 @@ class TestPlatformPriority:
     
     def test_prefers_specific_over_generic(self, tmp_path):
         """Should prefer specific platform files over generic ones."""
-        from detect_platform import detect_platform
-        
-        # Create multiple platform indicators
+        # Create both Dockerfile and render.yaml
         (tmp_path / 'Dockerfile').write_text('FROM node:18')
         (tmp_path / 'render.yaml').write_text('services:\n  - type: web')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        # Should prefer Render over generic Docker
-        assert result == 'render' or 'render' in str(result).lower() or result is not None
+        # Should prefer Render (priority 2) over generic Docker (priority 10)
+        assert result['primary_platform'] == 'render'
     
     def test_handles_multiple_platforms(self, tmp_path):
         """Should handle multiple platform indicators."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'Procfile').write_text('web: npm start')
         (tmp_path / 'fly.toml').write_text('app = "test"')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        # Should detect one of them
-        assert result is not None or result is None
+        # Should detect one based on priority
+        assert result['primary_platform'] in ['heroku', 'fly']
 
 
 class TestUnknownPlatform:
@@ -221,22 +192,54 @@ class TestUnknownPlatform:
     
     def test_returns_unknown_for_empty_dir(self, tmp_path):
         """Should return unknown for empty directory."""
-        from detect_platform import detect_platform
+        (tmp_path / 'README.md').write_text('# Test')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        assert result == 'unknown' or result is None or result == ''
+        assert result['primary_platform'] in [None, 'unknown']
     
     def test_returns_unknown_for_no_platform_files(self, tmp_path):
         """Should return unknown when no platform files found."""
-        from detect_platform import detect_platform
-        
         (tmp_path / 'index.js').write_text('console.log("hello")')
+        (tmp_path / 'package.json').write_text('{"name": "test"}')
         
-        result = detect_platform(str(tmp_path))
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
         
-        # May return unknown, None, or a guessed platform
-        assert result is not None or result is None
+        # No platform config files, may return unknown
+        assert result['primary_platform'] in [None, 'unknown']
+
+
+class TestDetectMethod:
+    """Tests for detect() method output."""
+    
+    def test_detect_returns_dict(self, tmp_path):
+        """Should return dictionary."""
+        (tmp_path / 'app.py').touch()
+        
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
+        
+        assert isinstance(result, dict)
+    
+    def test_detect_contains_primary_platform(self, tmp_path):
+        """Should contain primary_platform key."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
+        
+        assert 'primary_platform' in result
+    
+    def test_detect_contains_description(self, tmp_path):
+        """Should contain primary_description key."""
+        (tmp_path / 'Procfile').write_text('web: app')
+        
+        detector = PlatformDetector(str(tmp_path))
+        result = detector.detect()
+        
+        assert 'primary_description' in result
 
 
 class TestMainFunction:
@@ -244,73 +247,48 @@ class TestMainFunction:
     
     def test_main_requires_directory(self):
         """Should require directory argument."""
-        import detect_platform
-        
-        if hasattr(detect_platform, 'main'):
-            with patch('sys.argv', ['detect_platform.py']):
-                with pytest.raises(SystemExit):
-                    detect_platform.main()
+        with patch('sys.argv', ['detect_platform.py']):
+            with pytest.raises(SystemExit):
+                main()
     
-    def test_main_outputs_platform(self, tmp_path):
+    def test_main_outputs_platform(self, tmp_path, capsys):
         """Should output detected platform."""
-        import detect_platform
-        
         (tmp_path / 'render.yaml').write_text('services: []')
         
-        if hasattr(detect_platform, 'main'):
-            with patch('sys.argv', ['detect_platform.py', str(tmp_path)]):
-                with patch('builtins.print') as mock_print:
-                    try:
-                        detect_platform.main()
-                    except SystemExit:
-                        pass
-                    
-                    assert mock_print.called
-    
-    def test_main_json_output(self, tmp_path):
-        """Should output JSON when requested."""
-        import detect_platform
+        with patch('sys.argv', ['detect_platform.py', str(tmp_path)]):
+            main()
         
+        captured = capsys.readouterr()
+        assert 'render' in captured.out.lower() or 'Platform' in captured.out
+    
+    def test_main_json_output(self, tmp_path, capsys):
+        """Should output JSON when requested."""
         (tmp_path / 'Procfile').write_text('web: npm start')
         
-        if hasattr(detect_platform, 'main'):
-            with patch('sys.argv', ['detect_platform.py', str(tmp_path), '--format', 'json']):
-                with patch('builtins.print') as mock_print:
-                    try:
-                        detect_platform.main()
-                    except SystemExit:
-                        pass
-                    
-                    if mock_print.called:
-                        output = str(mock_print.call_args)
-                        # May be JSON formatted
-                        assert mock_print.called
+        with patch('sys.argv', ['detect_platform.py', str(tmp_path), '--json']):
+            main()
+        
+        captured = capsys.readouterr()
+        data = json.loads(captured.out)
+        assert 'primary_platform' in data
 
 
-class TestConfidenceScoring:
-    """Tests for detection confidence scoring."""
+class TestPlatformIndicators:
+    """Tests for platform indicators constant."""
     
-    def test_high_confidence_for_explicit_files(self, tmp_path):
-        """Should have high confidence for explicit platform files."""
-        import detect_platform
-        
-        if hasattr(detect_platform, 'detect_platform_with_confidence'):
-            (tmp_path / 'render.yaml').write_text('services: []')
-            
-            result = detect_platform.detect_platform_with_confidence(str(tmp_path))
-            
-            if isinstance(result, tuple):
-                platform, confidence = result
-                assert confidence >= 0.8 or True
+    def test_has_platform_indicators(self):
+        """Should have PLATFORM_INDICATORS defined."""
+        assert hasattr(PlatformDetector, 'PLATFORM_INDICATORS')
+        assert isinstance(PlatformDetector.PLATFORM_INDICATORS, dict)
     
-    def test_lower_confidence_for_inferred(self, tmp_path):
-        """Should have lower confidence for inferred platform."""
-        import detect_platform
-        
-        if hasattr(detect_platform, 'detect_platform_with_confidence'):
-            (tmp_path / 'Procfile').write_text('web: npm start')
-            
-            result = detect_platform.detect_platform_with_confidence(str(tmp_path))
-            
-            # May or may not have confidence scoring
-            assert result is not None or result is None
+    def test_heroku_in_indicators(self):
+        """Should have Heroku in platform indicators."""
+        assert 'heroku' in PlatformDetector.PLATFORM_INDICATORS
+    
+    def test_render_in_indicators(self):
+        """Should have Render in platform indicators."""
+        assert 'render' in PlatformDetector.PLATFORM_INDICATORS
+    
+    def test_fly_in_indicators(self):
+        """Should have Fly in platform indicators."""
+        assert 'fly' in PlatformDetector.PLATFORM_INDICATORS

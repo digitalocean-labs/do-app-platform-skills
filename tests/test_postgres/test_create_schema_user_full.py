@@ -8,6 +8,8 @@ from unittest.mock import patch, MagicMock
 # Add scripts to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../skills/postgres/scripts'))
 
+from create_schema_user import generate_sql, build_connection_string
+
 
 class TestCreateSchemaUserImports:
     """Tests for module imports."""
@@ -15,190 +17,106 @@ class TestCreateSchemaUserImports:
     def test_module_imports(self):
         """Module should import without errors."""
         import create_schema_user
-        assert hasattr(create_schema_user, 'generate_setup_sql')
+        assert hasattr(create_schema_user, 'generate_sql')
+        assert hasattr(create_schema_user, 'build_connection_string')
 
 
-class TestGenerateSetupSql:
-    """Tests for SQL generation."""
+class TestGenerateSqlFull:
+    """Additional tests for SQL generation."""
     
-    def test_generates_create_schema(self):
+    def test_generates_create_schema(self, capsys):
         """Should generate CREATE SCHEMA statement."""
-        from create_schema_user import generate_setup_sql
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS')
+        output = capsys.readouterr().out
         
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        assert 'CREATE SCHEMA' in sql
-        assert 'myschema' in sql
+        assert 'CREATE SCHEMA' in output
+        assert 'myschema' in output
     
-    def test_generates_create_user(self):
+    def test_generates_create_user(self, capsys):
         """Should generate CREATE USER statement."""
-        from create_schema_user import generate_setup_sql
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS')
+        output = capsys.readouterr().out
         
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        assert 'CREATE' in sql
-        assert 'myuser' in sql
+        assert 'CREATE USER' in output
+        assert 'myuser' in output
     
-    def test_includes_password(self):
+    def test_includes_password(self, capsys):
         """Should include password in CREATE statement."""
-        from create_schema_user import generate_setup_sql
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS')
+        output = capsys.readouterr().out
         
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        assert 'mypassword' in sql or 'PASSWORD' in sql
+        assert 'FAKE_TEST_PASS' in output or 'PASSWORD' in output
     
-    def test_grants_schema_privileges(self):
+    def test_grants_schema_privileges(self, capsys):
         """Should grant privileges on schema."""
-        from create_schema_user import generate_setup_sql
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS')
+        output = capsys.readouterr().out
         
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        assert 'GRANT' in sql
+        assert 'GRANT' in output
     
-    def test_sets_default_privileges(self):
+    def test_sets_default_privileges(self, capsys):
         """Should set default privileges for future objects."""
-        from create_schema_user import generate_setup_sql
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS')
+        output = capsys.readouterr().out
         
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        assert 'DEFAULT PRIVILEGES' in sql or 'GRANT' in sql
+        assert 'DEFAULT PRIVILEGES' in output or 'ALTER DEFAULT' in output
 
 
-class TestExecuteDirectly:
-    """Tests for direct database execution via psycopg2."""
+class TestBuildConnectionStringFull:
+    """Additional tests for connection string building."""
     
-    def test_connects_to_database(self):
-        """Should connect using psycopg2."""
-        mock_psycopg2 = MagicMock()
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.cursor.return_value = mock_cursor
-        mock_psycopg2.connect.return_value = mock_conn
+    def test_builds_basic_connection_string(self):
+        """Should build basic connection string."""
+        conn = build_connection_string(
+            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',
+            'newuser',
+            'FAKE_NEW_PASS'
+        )
         
-        with patch.dict('sys.modules', {'psycopg2': mock_psycopg2}):
-            from create_schema_user import execute_directly
-            
-            with patch('builtins.print'):
-                try:
-                    execute_directly(
-                        'postgresql://admin:pass@host/db',
-                        'myschema',
-                        'myuser',
-                        'mypassword'
-                    )
-                except:
-                    pass
-            
-            mock_psycopg2.connect.assert_called()
+        assert 'postgresql://' in conn
+        assert 'newuser' in conn
     
-    def test_executes_sql(self):
-        """Should execute setup SQL."""
-        mock_psycopg2 = MagicMock()
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.cursor.return_value = mock_cursor
-        mock_psycopg2.connect.return_value = mock_conn
+    def test_preserves_host_and_port(self):
+        """Should preserve host and port from base URL."""
+        conn = build_connection_string(
+            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',
+            'newuser',
+            'FAKE_NEW_PASS'
+        )
         
-        with patch.dict('sys.modules', {'psycopg2': mock_psycopg2}):
-            from create_schema_user import execute_directly
-            
-            with patch('builtins.print'):
-                try:
-                    execute_directly(
-                        'postgresql://admin:pass@host/db',
-                        'myschema',
-                        'myuser',
-                        'mypassword'
-                    )
-                except:
-                    pass
-            
-            assert mock_cursor.execute.called
+        assert 'localhost' in conn
+        assert '25060' in conn
     
-    def test_commits_transaction(self):
-        """Should commit the transaction."""
-        mock_psycopg2 = MagicMock()
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.cursor.return_value = mock_cursor
-        mock_psycopg2.connect.return_value = mock_conn
+    def test_includes_sslmode(self):
+        """Should include sslmode=require."""
+        conn = build_connection_string(
+            'postgresql://admin:FAKE_ADMIN_PASS@localhost:25060/defaultdb',
+            'newuser',
+            'FAKE_NEW_PASS'
+        )
         
-        with patch.dict('sys.modules', {'psycopg2': mock_psycopg2}):
-            from create_schema_user import execute_directly
-            
-            with patch('builtins.print'):
-                try:
-                    execute_directly(
-                        'postgresql://admin:pass@host/db',
-                        'myschema',
-                        'myuser',
-                        'mypassword'
-                    )
-                except:
-                    pass
-            
-            mock_conn.commit.assert_called()
+        assert 'sslmode=require' in conn
+
+
+class TestGenerateSqlToFiles:
+    """Tests for SQL file generation."""
     
-    def test_handles_duplicate_schema(self):
-        """Should handle duplicate schema error."""
-        mock_psycopg2 = MagicMock()
+    def test_writes_sql_files(self, tmp_path):
+        """Should write SQL files when output_dir provided."""
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS', output_dir=str(tmp_path))
         
-        # Create DuplicateSchema exception class
-        class DuplicateSchema(Exception):
-            pass
-        
-        mock_psycopg2.errors = MagicMock()
-        mock_psycopg2.errors.DuplicateSchema = DuplicateSchema
-        
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.execute.side_effect = DuplicateSchema("schema already exists")
-        mock_conn.cursor.return_value = mock_cursor
-        mock_psycopg2.connect.return_value = mock_conn
-        
-        with patch.dict('sys.modules', {'psycopg2': mock_psycopg2, 'psycopg2.errors': mock_psycopg2.errors}):
-            from create_schema_user import execute_directly
-            
-            with patch('builtins.print') as mock_print:
-                try:
-                    execute_directly(
-                        'postgresql://admin:pass@host/db',
-                        'existing_schema',
-                        'myuser',
-                        'mypassword'
-                    )
-                except:
-                    pass
+        # Check that files were created
+        files = list(tmp_path.glob('*.sql'))
+        assert len(files) > 0
     
-    def test_handles_duplicate_role(self):
-        """Should handle duplicate role error."""
-        mock_psycopg2 = MagicMock()
+    def test_generates_multiple_files(self, tmp_path):
+        """Should generate multiple SQL files."""
+        generate_sql('myschema', 'myuser', 'FAKE_TEST_PASS', output_dir=str(tmp_path))
         
-        class DuplicateObject(Exception):
-            pass
-        
-        mock_psycopg2.errors = MagicMock()
-        mock_psycopg2.errors.DuplicateObject = DuplicateObject
-        
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.execute.side_effect = DuplicateObject("role already exists")
-        mock_conn.cursor.return_value = mock_cursor
-        mock_psycopg2.connect.return_value = mock_conn
-        
-        with patch.dict('sys.modules', {'psycopg2': mock_psycopg2, 'psycopg2.errors': mock_psycopg2.errors}):
-            from create_schema_user import execute_directly
-            
-            with patch('builtins.print'):
-                try:
-                    execute_directly(
-                        'postgresql://admin:pass@host/db',
-                        'myschema',
-                        'existing_user',
-                        'mypassword'
-                    )
-                except:
-                    pass
+        # Check for expected files
+        expected_files = ['db-setup.sql', 'db-users.sql', 'db-permissions.sql', 'db-connections.env']
+        for filename in expected_files:
+            assert (tmp_path / filename).exists(), f"Expected {filename} to exist"
 
 
 class TestMainFunction:
@@ -208,120 +126,25 @@ class TestMainFunction:
         """Should exit if required arguments missing."""
         import create_schema_user
         
-        if hasattr(create_schema_user, 'main'):
-            with patch('sys.argv', ['create_schema_user.py']):
-                with pytest.raises(SystemExit):
-                    create_schema_user.main()
+        with patch('sys.argv', ['create_schema_user.py']):
+            with pytest.raises(SystemExit):
+                create_schema_user.main()
     
-    def test_main_sql_only_mode(self):
-        """Should output SQL only when --sql-only flag used."""
+    def test_main_generate_mode(self, capsys):
+        """Should generate SQL in generate mode."""
         import create_schema_user
         
-        if hasattr(create_schema_user, 'main'):
-            with patch('sys.argv', [
-                'create_schema_user.py',
-                '--schema', 'myschema',
-                '--username', 'myuser',
-                '--password', 'mypass',
-                '--sql-only'
-            ]):
-                with patch('builtins.print') as mock_print:
-                    try:
-                        create_schema_user.main()
-                    except SystemExit:
-                        pass
-                    
-                    # Should have printed SQL
-                    printed = ' '.join(str(c) for c in mock_print.call_args_list)
-                    assert 'CREATE' in printed or mock_print.called
-    
-    def test_main_execute_mode(self):
-        """Should execute SQL when connection string provided."""
-        mock_psycopg2 = MagicMock()
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.cursor.return_value = mock_cursor
-        mock_psycopg2.connect.return_value = mock_conn
-        
-        with patch.dict('sys.modules', {'psycopg2': mock_psycopg2}):
-            import create_schema_user
+        with patch('sys.argv', [
+            'create_schema_user.py',
+            'myschema',
+            'myuser', 
+            'FAKE_TEST_PASS',
+            '--generate'
+        ]):
+            try:
+                create_schema_user.main()
+            except SystemExit:
+                pass
             
-            if hasattr(create_schema_user, 'main'):
-                with patch('sys.argv', [
-                    'create_schema_user.py',
-                    '--connection-string', 'postgresql://admin:pass@host/db',
-                    '--schema', 'myschema',
-                    '--username', 'myuser',
-                    '--password', 'mypass'
-                ]):
-                    with patch('builtins.print'):
-                        try:
-                            create_schema_user.main()
-                        except SystemExit:
-                            pass
-
-
-class TestPasswordGeneration:
-    """Tests for password generation."""
-    
-    def test_generates_password_when_not_provided(self):
-        """Should generate password if not provided."""
-        import create_schema_user
-        
-        if hasattr(create_schema_user, 'generate_password'):
-            password = create_schema_user.generate_password()
-            
-            assert len(password) >= 16
-            assert any(c.isupper() for c in password)
-            assert any(c.islower() for c in password)
-    
-    def test_uses_provided_password(self):
-        """Should use provided password."""
-        from create_schema_user import generate_setup_sql
-        
-        sql = generate_setup_sql('schema', 'user', 'my_custom_password')
-        
-        assert 'my_custom_password' in sql
-
-
-class TestConnectionHandling:
-    """Tests for connection string handling."""
-    
-    def test_adds_sslmode(self):
-        """Should add sslmode=require if not present."""
-        import create_schema_user
-        
-        if hasattr(create_schema_user, 'ensure_ssl'):
-            conn = create_schema_user.ensure_ssl('postgresql://user:pass@host/db')
-            
-            assert 'sslmode' in conn
-    
-    def test_preserves_existing_sslmode(self):
-        """Should preserve existing sslmode."""
-        import create_schema_user
-        
-        if hasattr(create_schema_user, 'ensure_ssl'):
-            conn = create_schema_user.ensure_ssl('postgresql://user:pass@host/db?sslmode=verify-full')
-            
-            assert 'verify-full' in conn
-
-
-class TestSchemaIsolation:
-    """Tests for schema isolation features."""
-    
-    def test_revokes_public_access(self):
-        """Should revoke access from public schema."""
-        from create_schema_user import generate_setup_sql
-        
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        # Should contain REVOKE for public
-        assert 'REVOKE' in sql or 'public' in sql.lower()
-    
-    def test_sets_search_path(self):
-        """Should set search_path for user."""
-        from create_schema_user import generate_setup_sql
-        
-        sql = generate_setup_sql('myschema', 'myuser', 'mypassword')
-        
-        assert 'search_path' in sql.lower() or 'ALTER' in sql
+            output = capsys.readouterr().out
+            assert 'CREATE' in output or output != ''

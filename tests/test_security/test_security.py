@@ -340,7 +340,7 @@ class TestOutputSanitization:
             for pattern in sensitive_patterns:
                 if pattern in error_msg.lower():
                     # Should not show actual values
-                    assert "***" in error_msg or "[REDACTED]" in error_msg or True
+                    assert "***" in error_msg or "[REDACTED]" in error_msg
 
     def test_file_paths_not_leaked_to_user(self, temp_repo):
         """Internal file paths should not be leaked unnecessarily."""
