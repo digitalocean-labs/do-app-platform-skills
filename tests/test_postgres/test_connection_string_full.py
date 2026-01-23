@@ -29,7 +29,7 @@ class TestGenerateConnectionStrings:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:adminpass@db-host.ondigitalocean.com:25060/defaultdb?sslmode=require',
+                base_url='postgresql://doadmin:adminpass@db-host.ondigitalocean.com:25060/defaultdb?sslmode=require',  # ggshield-ignore-line
                 username='testuser',
                 password='testpassword123'
             )
@@ -45,7 +45,7 @@ class TestGenerateConnectionStrings:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -59,7 +59,7 @@ class TestGenerateConnectionStrings:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='p@ss:word/with?special&chars='
             )
@@ -74,7 +74,7 @@ class TestGenerateConnectionStrings:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass',
                 schema='myschema'
@@ -93,7 +93,7 @@ class TestConnectionStringFormats:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host.db.ondigitalocean.com:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host.db.ondigitalocean.com:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -109,7 +109,7 @@ class TestConnectionStringFormats:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -123,7 +123,7 @@ class TestConnectionStringFormats:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -137,7 +137,7 @@ class TestConnectionStringFormats:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -156,7 +156,7 @@ class TestEdgeCases:
         with patch('builtins.print') as mock_print:
             # URL without port should default to 25060
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@host/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -170,7 +170,7 @@ class TestEdgeCases:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/?sslmode=require',
+                base_url='postgresql://doadmin:pass@host:25060/?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -184,7 +184,7 @@ class TestEdgeCases:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@host:25060/db',
+                base_url='postgresql://doadmin:pass@host:25060/db',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )
@@ -210,7 +210,7 @@ class TestMainFunction:
         
         with patch('sys.argv', [
             'generate_connection_string.py',
-            'postgresql://doadmin:pass@host:25060/db?sslmode=require',
+            'postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
             'testuser',
             'testpassword123'
         ]):
@@ -226,7 +226,7 @@ class TestMainFunction:
         
         with patch('sys.argv', [
             'generate_connection_string.py',
-            'postgresql://doadmin:pass@host:25060/db?sslmode=require',
+            'postgresql://doadmin:pass@host:25060/db?sslmode=require',  # ggshield-ignore-line
             'testuser',
             'testpassword123',
             '--schema', 'myschema'
@@ -247,7 +247,7 @@ class TestDOConnectionString:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:adminpass@db-postgresql-nyc1-12345-do-user-123456-0.b.db.ondigitalocean.com:25060/defaultdb?sslmode=require',
+                base_url='postgresql://doadmin:adminpass@db-postgresql-nyc1-12345-do-user-123456-0.b.db.ondigitalocean.com:25060/defaultdb?sslmode=require',  # ggshield-ignore-line
                 username='myapp_user',
                 password='FAKE_TEST_PASSWORD_12345'
             )
@@ -262,7 +262,7 @@ class TestDOConnectionString:
         
         with patch('builtins.print') as mock_print:
             generate_connection_strings(
-                base_url='postgresql://doadmin:pass@my-db-host.db.ondigitalocean.com:25060/db?sslmode=require',
+                base_url='postgresql://doadmin:pass@my-db-host.db.ondigitalocean.com:25060/db?sslmode=require',  # ggshield-ignore-line
                 username='user',
                 password='pass'
             )

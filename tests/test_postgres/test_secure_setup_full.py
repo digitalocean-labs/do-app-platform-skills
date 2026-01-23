@@ -41,7 +41,7 @@ class TestExecuteSql:
                 stderr=''
             )
             
-            result = execute_sql('postgresql://user:FAKE_PASS@localhost/db', 'SELECT 1')
+            result = execute_sql('postgresql://user:FAKE_PASS@localhost/db', 'SELECT 1')  # ggshield-ignore-line
             
             assert result == True
             mock_run.assert_called_once()
@@ -55,7 +55,7 @@ class TestExecuteSql:
                 stderr='ERROR: connection refused'
             )
             
-            result = execute_sql('postgresql://user:FAKE_PASS@localhost/db', 'SELECT 1')
+            result = execute_sql('postgresql://user:FAKE_PASS@localhost/db', 'SELECT 1')  # ggshield-ignore-line
             
             assert result == False
 
@@ -68,7 +68,7 @@ class TestExecuteSqlScript:
         with patch('subprocess.run') as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout='', stderr='')
             
-            result = execute_sql_script('postgresql://user:FAKE_PASS@localhost/db', '/path/to/script.sql')
+            result = execute_sql_script('postgresql://user:FAKE_PASS@localhost/db', '/path/to/script.sql')  # ggshield-ignore-line
             
             assert result == True
             mock_run.assert_called_once()
@@ -78,7 +78,7 @@ class TestExecuteSqlScript:
         with patch('subprocess.run') as mock_run:
             mock_run.return_value = MagicMock(returncode=1, stdout='', stderr='error')
             
-            result = execute_sql_script('postgresql://user:FAKE_PASS@localhost/db', '/path/to/script.sql')
+            result = execute_sql_script('postgresql://user:FAKE_PASS@localhost/db', '/path/to/script.sql')  # ggshield-ignore-line
             
             assert result == False
 
@@ -145,12 +145,12 @@ class TestExtractHostFromUrl:
     
     def test_extracts_host(self):
         """Should extract hostname from connection string."""
-        host = extract_host_from_url('postgresql://user:FAKE_PASS@example-db.localhost:25060/db')
+        host = extract_host_from_url('postgresql://user:FAKE_PASS@example-db.localhost:25060/db')  # ggshield-ignore-line
         assert host == 'example-db.localhost'
     
     def test_handles_port(self):
         """Should handle URLs with port."""
-        host = extract_host_from_url('postgresql://user:FAKE_PASS@localhost:5432/db')
+        host = extract_host_from_url('postgresql://user:FAKE_PASS@localhost:5432/db')  # ggshield-ignore-line
         assert host == 'localhost'
 
 
@@ -193,7 +193,7 @@ class TestMainFunction:
         
         with patch('sys.argv', [
             'secure_setup.py',
-            '--admin-url', 'postgresql://admin:FAKE_PASS@localhost/db',
+            '--admin-url', 'postgresql://admin:FAKE_PASS@localhost/db',  # ggshield-ignore-line
             '--app-name', 'myapp',
             '--repo', 'owner/repo',
             '--dry-run'

@@ -112,7 +112,7 @@ class TestGetConnectionString:
     
     def test_basic_connection_string(self):
         """Should generate valid connection string."""
-        base_url = "postgresql://doadmin:adminpass@db-host.com:25060/defaultdb?sslmode=require"
+        base_url = "postgresql://doadmin:adminpass@db-host.com:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         conn = get_connection_string(base_url, "myuser", "mypass")
         
         assert "myuser:mypass" in conn
@@ -121,14 +121,14 @@ class TestGetConnectionString:
     
     def test_preserves_ssl_mode(self):
         """Should preserve SSL mode from base URL."""
-        base_url = "postgresql://doadmin:x@host:25060/db?sslmode=verify-full"
+        base_url = "postgresql://doadmin:x@host:25060/db?sslmode=verify-full"  # ggshield-ignore-line
         conn = get_connection_string(base_url, "user", "pass")
         
         assert "sslmode=verify-full" in conn
     
     def test_default_ssl_mode(self):
         """Should default to require if sslmode not in URL."""
-        base_url = "postgresql://doadmin:x@host:25060/db"
+        base_url = "postgresql://doadmin:x@host:25060/db"  # ggshield-ignore-line
         conn = get_connection_string(base_url, "user", "pass")
         
         assert "sslmode=require" in conn

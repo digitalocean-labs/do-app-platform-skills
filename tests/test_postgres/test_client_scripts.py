@@ -131,7 +131,7 @@ class TestGenerateConnectionString:
 
     def test_generates_basic_connection_string(self, capsys):
         """Should generate basic connection string."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         generate_connection_strings(base, "testuser", "FAKE_NEW_PASS")
         
         output = capsys.readouterr().out
@@ -141,7 +141,7 @@ class TestGenerateConnectionString:
 
     def test_generates_schema_specific_connection(self, capsys):
         """Should generate schema-specific connection string."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         generate_connection_strings(base, "testuser", "FAKE_TEST_PASS", schema="myschema")
         
         output = capsys.readouterr().out
@@ -149,7 +149,7 @@ class TestGenerateConnectionString:
 
     def test_url_encodes_special_characters(self, capsys):
         """Should URL-encode passwords with special characters."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         password = "FAKE@TEST#PASS!"
         
         generate_connection_strings(base, "testuser", password)
@@ -160,7 +160,7 @@ class TestGenerateConnectionString:
 
     def test_generates_environment_variables(self, capsys):
         """Should generate environment variable format."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
@@ -172,7 +172,7 @@ class TestGenerateConnectionString:
 
     def test_generates_orm_specific_formats(self, capsys):
         """Should generate ORM-specific formats."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
@@ -180,7 +180,7 @@ class TestGenerateConnectionString:
 
     def test_defaults_to_require_sslmode(self, capsys):
         """Should default to sslmode=require."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb"  # ggshield-ignore-line
         generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
@@ -188,7 +188,7 @@ class TestGenerateConnectionString:
 
     def test_generates_psql_command(self, capsys):
         """Should generate psql command."""
-        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"
+        base = "postgresql://admin:FAKE_TEST_PASS@localhost:25060/defaultdb?sslmode=require"  # ggshield-ignore-line
         generate_connection_strings(base, "testuser", "FAKE_TEST_PASS")
         
         output = capsys.readouterr().out
@@ -217,7 +217,7 @@ class TestListSchemasUsers:
             from list_schemas_users import list_schemas_users
             # Should exit with code 1 when psycopg2 is missing
             with pytest.raises(SystemExit) as exc_info:
-                list_schemas_users("postgresql://invalid:invalid@localhost:5432/invalid")
+                list_schemas_users("postgresql://invalid:invalid@localhost:5432/invalid")  # ggshield-ignore-line
             assert exc_info.value.code == 1
 
 
@@ -236,7 +236,7 @@ class TestSecureSetup:
         """Should extract hostname from connection string."""
         from secure_setup import extract_host_from_url
         
-        url = "postgresql://testuser:FAKE_TEST_PASS@example-db.localhost:25060/testdb"
+        url = "postgresql://testuser:FAKE_TEST_PASS@example-db.localhost:25060/testdb"  # ggshield-ignore-line
         host = extract_host_from_url(url)
         
         assert host == "example-db.localhost"
