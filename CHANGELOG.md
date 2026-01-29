@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
----
 
 ## [0.1.2] - 2026-01-22
 
@@ -35,7 +34,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated README with expanded version compatibility section
 - Updated CI workflow to include skill validation
 - Updated CONTRIBUTING.md with SKILL.md requirements
-=======
 - Contributing guidelines
 - CHANGELOG.md
 
