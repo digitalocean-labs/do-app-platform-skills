@@ -37,7 +37,7 @@ def collect_traffic_data(repo):
     """Collect traffic (views) data."""
     print("Collecting traffic data...")
     try:
-        views = repo.get_views_traffic(per="day")
+        views_data = repo.get_views_traffic(per="day")
     except Exception as e:
         print(f"⚠️  Warning: Cannot access traffic data: {e}")
         print("   This requires a Personal Access Token with 'repo' scope.")
@@ -45,7 +45,8 @@ def collect_traffic_data(repo):
         return []
     
     data = []
-    for view in views['views']:
+    # views_data is a dict with 'count', 'uniques', and 'views' keys
+    for view in views_data.get('views', []):
         data.append({
             'date': view.timestamp.strftime('%Y-%m-%d'),
             'count': view.count,
@@ -71,13 +72,14 @@ def collect_clones_data(repo):
     """Collect clones data."""
     print("Collecting clones data...")
     try:
-        clones = repo.get_clones_traffic(per="day")
+        clones_data = repo.get_clones_traffic(per="day")
     except Exception as e:
         print(f"⚠️  Warning: Cannot access clones data: {e}")
         return []
     
     data = []
-    for clone in clones['clones']:
+    # clones_data is a dict with 'count', 'uniques', and 'clones' keys
+    for clone in clones_data.get('clones', []):
         data.append({
             'date': clone.timestamp.strftime('%Y-%m-%d'),
             'count': clone.count,
