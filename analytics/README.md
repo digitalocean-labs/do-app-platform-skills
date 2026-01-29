@@ -2,6 +2,41 @@
 
 This directory contains historical GitHub traffic and usage data for the do-app-platform-skills repository.
 
+## Initial Setup (One-Time)
+
+The GitHub Action requires a Personal Access Token (PAT) to access traffic data.
+
+### Create a Personal Access Token
+
+1. Go to **GitHub Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+   - Or visit: https://github.com/settings/tokens
+2. Click **Generate new token** → **Generate new token (classic)**
+3. Configure:
+   - **Note**: `do-app-platform-skills-analytics`
+   - **Expiration**: 90 days (or No expiration for production)
+   - **Scopes**: Select `repo` (Full control of private repositories)
+     - For public repos, `public_repo` is sufficient
+4. Click **Generate token**
+5. **Copy the token immediately** (you won't see it again)
+
+### Add Token to Repository Secrets
+
+1. Go to your repository → **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret**
+3. Configure:
+   - **Name**: `ANALYTICS_PAT`
+   - **Secret**: Paste the token you copied
+4. Click **Add secret**
+
+### Test the Setup
+
+Manually trigger the workflow:
+```bash
+gh workflow run collect-analytics.yml
+```
+
+Or go to **Actions** → **Collect GitHub Analytics** → **Run workflow**
+
 ## Data Collection
 
 Analytics data is automatically collected daily via the `.github/workflows/collect-analytics.yml` GitHub Action.

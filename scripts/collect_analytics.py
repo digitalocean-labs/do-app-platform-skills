@@ -16,7 +16,7 @@ import os
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from github import Github
+from github import Github, Auth
 import pandas as pd
 
 # Configuration
@@ -36,7 +36,13 @@ def setup_analytics_directory():
 def collect_traffic_data(repo):
     """Collect traffic (views) data."""
     print("Collecting traffic data...")
-    views = repo.get_views_traffic(per="day")
+    try:
+        views = repo.get_views_traffic(per="day")
+    except Exception as e:
+        print(f"⚠️  Warning: Cannot access traffic data: {e}")
+        print("   This requires a Personal Access Token with 'repo' scope.")
+        print("   See analytics/README.md for setup instructions.")
+        return []
     
     data = []
     for view in views['views']:
@@ -64,7 +70,11 @@ def collect_traffic_data(repo):
 def collect_clones_data(repo):
     """Collect clones data."""
     print("Collecting clones data...")
-    clones = repo.get_clones_traffic(per="day")
+    try:
+        clones = repo.get_clones_traffic(per="day")
+    except Exception as e:
+        print(f"⚠️  Warning: Cannot access clones data: {e}")
+        return []
     
     data = []
     for clone in clones['clones']:
@@ -191,9 +201,15 @@ def main():
     # Setup
     setup_analytics_directory()
     
-    # Connect to GitHub
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(f"{REPO_OWNER}/{REPO_NAME}")
+    # Connect to GitHub using Auth.Token
+    auth = Auth.Token(GITHUB_TOKEN)
+    g = Github(auth=auth)
+    
+    try:
+        repo = g.get_repo(f"{REPO_OWNER}/{REPO_NAME}")
+    except Exception as e:
+        print(f"❌ Error accessing repository: {e}")
+        raise
     
     # Collect all data
     traffic_data = collect_traffic_data(repo)
