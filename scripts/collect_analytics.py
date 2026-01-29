@@ -45,8 +45,8 @@ def collect_traffic_data(repo):
         return []
     
     data = []
-    # views_data is a dict with 'count', 'uniques', and 'views' keys
-    for view in views_data.get('views', []):
+    # views_data is a View object with a 'views' attribute containing the list
+    for view in views_data.get('views', []) if isinstance(views_data, dict) else (views_data.views if hasattr(views_data, 'views') else []):
         data.append({
             'date': view.timestamp.strftime('%Y-%m-%d'),
             'count': view.count,
@@ -78,8 +78,8 @@ def collect_clones_data(repo):
         return []
     
     data = []
-    # clones_data is a dict with 'count', 'uniques', and 'clones' keys
-    for clone in clones_data.get('clones', []):
+    # clones_data is a Clones object with a 'clones' attribute containing the list
+    for clone in clones_data.get('clones', []) if isinstance(clones_data, dict) else (clones_data.clones if hasattr(clones_data, 'clones') else []):
         data.append({
             'date': clone.timestamp.strftime('%Y-%m-%d'),
             'count': clone.count,
