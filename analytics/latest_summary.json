@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-01-30T00:06:20.273225+00:00",
+  "generated_at": "2026-01-31T00:05:43.783533+00:00",
   "summary": {
-    "total_views": 345,
-    "unique_visitors": 97,
-    "total_clones": 176,
-    "unique_cloners": 104,
+    "total_views": 457,
+    "unique_visitors": 95,
+    "total_clones": 267,
+    "unique_cloners": 140,
     "popular_paths_count": 10,
     "referrers_count": 10
   },
@@ -12,72 +12,72 @@
     {
       "path": "/digitalocean-labs/do-app-platform-skills",
       "title": "digitalocean-labs/do-app-platform-skills: Claude/Agent Skills for DigitalOcea...",
-      "count": 109,
-      "uniques": 58,
-      "date": "2026-01-30"
+      "count": 134,
+      "uniques": 62,
+      "date": "2026-01-31"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
       "title": "do-app-platform-skills/skills at main \u00b7 digitalocean-labs/do-app-platform-ski...",
-      "count": 22,
+      "count": 23,
       "uniques": 12,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main",
-      "title": "GitHub - digitalocean-labs/do-app-platform-skills: Claude/Agent Skills for Di...",
-      "count": 15,
-      "uniques": 8,
-      "date": "2026-01-30"
+      "title": "digitalocean-labs/do-app-platform-skills: Claude/Agent Skills for DigitalOcea...",
+      "count": 17,
+      "uniques": 9,
+      "date": "2026-01-31"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/SKILL.md",
       "title": "do-app-platform-skills/SKILL.md at main \u00b7 digitalocean-labs/do-app-platform-s...",
-      "count": 15,
+      "count": 14,
       "uniques": 4,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/actions/workflows/collect-analytics.yml",
+      "title": "Collect GitHub Analytics \u00b7 Workflow runs \u00b7 digitalocean-labs/do-app-platform-...",
+      "count": 13,
+      "uniques": 1,
+      "date": "2026-01-31"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/analytics",
+      "title": "do-app-platform-skills/analytics at main \u00b7 digitalocean-labs/do-app-platform-...",
+      "count": 13,
+      "uniques": 1,
+      "date": "2026-01-31"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/ai-services",
       "title": "do-app-platform-skills/skills at main \u00b7 digitalocean-labs/do-app-platform-ski...",
       "count": 11,
       "uniques": 7,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/deployment",
       "title": "do-app-platform-skills/skills at main \u00b7 digitalocean-labs/do-app-platform-ski...",
-      "count": 8,
-      "uniques": 7,
-      "date": "2026-01-30"
+      "count": 9,
+      "uniques": 8,
+      "date": "2026-01-31"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/ai-services/SKILL.md",
       "title": "do-app-platform-skills/skills/ai-services at main \u00b7 digitalocean-labs/do-app-...",
-      "count": 7,
-      "uniques": 4,
-      "date": "2026-01-30"
+      "count": 8,
+      "uniques": 5,
+      "date": "2026-01-31"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/ai-services/reference/agent-development-kit.md",
-      "title": "do-app-platform-skills/skills/ai-services/reference/agent-development-kit.md ...",
-      "count": 6,
-      "uniques": 3,
-      "date": "2026-01-30"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/deployment/SKILL.md",
-      "title": "do-app-platform-skills/skills/deployment at main \u00b7 digitalocean-labs/do-app-p...",
-      "count": 5,
-      "uniques": 4,
-      "date": "2026-01-30"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/postgres",
-      "title": "do-app-platform-skills/skills/postgres at main \u00b7 digitalocean-labs/do-app-pla...",
-      "count": 5,
-      "uniques": 4,
-      "date": "2026-01-30"
+      "path": "/digitalocean-labs/do-app-platform-skills/actions",
+      "title": "Workflow runs \u00b7 digitalocean-labs/do-app-platform-skills",
+      "count": 8,
+      "uniques": 1,
+      "date": "2026-01-31"
     }
   ],
   "top_referrers": [
@@ -85,61 +85,61 @@
       "referrer": "Google",
       "count": 70,
       "uniques": 14,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "referrer": "github.com",
-      "count": 48,
+      "count": 50,
       "uniques": 10,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "referrer": "confluence.e-loreal.com",
-      "count": 39,
+      "count": 42,
       "uniques": 5,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "referrer": "claude.ai",
       "count": 10,
       "uniques": 2,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
+    },
+    {
+      "referrer": "digitalocean.com",
+      "count": 8,
+      "uniques": 4,
+      "date": "2026-01-31"
+    },
+    {
+      "referrer": "com.reddit.frontpage",
+      "count": 4,
+      "uniques": 3,
+      "date": "2026-01-31"
     },
     {
       "referrer": "DuckDuckGo",
       "count": 4,
       "uniques": 1,
-      "date": "2026-01-30"
-    },
-    {
-      "referrer": "digitalocean.com",
-      "count": 4,
-      "uniques": 1,
-      "date": "2026-01-30"
-    },
-    {
-      "referrer": "com.reddit.frontpage",
-      "count": 3,
-      "uniques": 2,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "referrer": "com.slack",
       "count": 2,
       "uniques": 2,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "referrer": "chatgpt.com",
       "count": 2,
       "uniques": 1,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     },
     {
       "referrer": "search.brave.com",
       "count": 1,
       "uniques": 1,
-      "date": "2026-01-30"
+      "date": "2026-01-31"
     }
   ]
 }
