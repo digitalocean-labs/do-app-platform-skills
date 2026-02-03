@@ -1,6 +1,10 @@
 ---
 name: managed-db-services
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Configure DigitalOcean Managed MySQL, MongoDB, Valkey, Kafka, and OpenSearch for App Platform. Use when setting up non-PostgreSQL databases, configuring trusted sources, or troubleshooting database connectivity.
+related_skills: [designer, networking]
+deprecated: false
 ---
 
 # Managed Database Services Skill

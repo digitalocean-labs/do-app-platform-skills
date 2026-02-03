@@ -1,0 +1,44 @@
+name: Collect GitHub Analytics
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC to capture traffic data before it expires (14-day window)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+
+jobs:
+  collect-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install requests PyGithub pandas
+
+      - name: Collect traffic data
+        env:
+          GITHUB_TOKEN: ${{ secrets.ANALYTICS_PAT }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          python scripts/collect_analytics.py
+
+      - name: Commit and push analytics data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add analytics/
+          git diff --staged --quiet || git commit -m "chore: update analytics data [skip ci]"
+          git push

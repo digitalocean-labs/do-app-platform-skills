@@ -1,6 +1,10 @@
 ---
 name: planner
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Generate staged project plans from design through deployment. Use when planning App Platform projects, breaking complex deployments into resumable stages, or tracking multi-step infrastructure setup.
+related_skills: [designer, deployment, postgres, networking]
+deprecated: false
 ---
 
 # Planner Skill

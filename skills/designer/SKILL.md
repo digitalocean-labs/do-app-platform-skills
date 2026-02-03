@@ -1,6 +1,10 @@
 ---
 name: app-platform-designer
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Transform natural language application descriptions into production-ready DigitalOcean App Platform specifications. Use when designing apps, creating app specs, generating deploy.template.yaml, or architecting multi-component applications.
+related_skills: [deployment, networking, postgres, managed-db-services]
+deprecated: false
 ---
 
 # App Platform Designer Skill

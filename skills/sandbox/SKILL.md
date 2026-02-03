@@ -1,6 +1,10 @@
 ---
 name: app-platform-sandbox
+version: 1.0.0
+min_doctl_version: "1.82.0"
 description: Create and manage isolated container sandboxes for AI agent code execution. Use when you need ephemeral environments to run untrusted code, execute agent workflows, or test in isolation. NOT for debugging existing apps (use troubleshooting skill).
+related_skills: [troubleshooting]
+deprecated: false
 ---
 
 # Sandbox Skill
