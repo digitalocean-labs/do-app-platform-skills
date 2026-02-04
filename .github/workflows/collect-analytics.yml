@@ -3,7 +3,7 @@ name: Collect GitHub Analytics
 on:
   schedule:
     # Run daily at 00:00 UTC to capture traffic data before it expires (14-day window)
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * 0'
   workflow_dispatch: # Allow manual triggering
 
 permissions:
