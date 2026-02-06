@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-02-05T00:07:09.489876+00:00",
+  "generated_at": "2026-02-06T00:05:12.015016+00:00",
   "summary": {
-    "total_views": 439,
-    "unique_visitors": 101,
-    "total_clones": 354,
-    "unique_cloners": 197,
+    "total_views": 440,
+    "unique_visitors": 95,
+    "total_clones": 348,
+    "unique_cloners": 191,
     "popular_paths_count": 10,
     "referrers_count": 7
   },
@@ -12,72 +12,72 @@
     {
       "path": "/digitalocean-labs/do-app-platform-skills",
       "title": "digitalocean-labs/do-app-platform-skills: Claude/Agent Skills for DigitalOcea...",
-      "count": 154,
-      "uniques": 68,
-      "date": "2026-02-05"
+      "count": 148,
+      "uniques": 65,
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/analytics",
       "title": "do-app-platform-skills/analytics at main \u00b7 digitalocean-labs/do-app-platform-...",
-      "count": 19,
+      "count": 21,
       "uniques": 1,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
       "title": "do-app-platform-skills/skills at main \u00b7 digitalocean-labs/do-app-platform-ski...",
-      "count": 18,
-      "uniques": 11,
-      "date": "2026-02-05"
+      "count": 17,
+      "uniques": 10,
+      "date": "2026-02-06"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/commits/main",
+      "title": "Commits \u00b7 digitalocean-labs/do-app-platform-skills",
+      "count": 16,
+      "uniques": 2,
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/SKILL.md",
       "title": "do-app-platform-skills/SKILL.md at main \u00b7 digitalocean-labs/do-app-platform-s...",
       "count": 15,
       "uniques": 3,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/actions/workflows/collect-analytics.yml",
       "title": "Collect GitHub Analytics \u00b7 Workflow runs \u00b7 digitalocean-labs/do-app-platform-...",
-      "count": 13,
+      "count": 14,
       "uniques": 1,
-      "date": "2026-02-05"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main",
-      "title": "digitalocean-labs/do-app-platform-skills: Claude/Agent Skills for DigitalOcea...",
-      "count": 12,
-      "uniques": 4,
-      "date": "2026-02-05"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/commits/main",
-      "title": "Commits \u00b7 digitalocean-labs/do-app-platform-skills",
-      "count": 11,
-      "uniques": 2,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/actions",
       "title": "Workflow runs \u00b7 digitalocean-labs/do-app-platform-skills",
       "count": 11,
       "uniques": 1,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main",
+      "title": "digitalocean-labs/do-app-platform-skills: Claude/Agent Skills for DigitalOcea...",
+      "count": 10,
+      "uniques": 3,
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/deployment",
       "title": "do-app-platform-skills/skills at main \u00b7 digitalocean-labs/do-app-platform-ski...",
-      "count": 10,
-      "uniques": 8,
-      "date": "2026-02-05"
+      "count": 9,
+      "uniques": 7,
+      "date": "2026-02-06"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/deployment/SKILL.md",
       "title": "do-app-platform-skills/skills/deployment at main \u00b7 digitalocean-labs/do-app-p...",
       "count": 8,
       "uniques": 5,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     }
   ],
   "top_referrers": [
@@ -85,43 +85,43 @@
       "referrer": "github.com",
       "count": 59,
       "uniques": 8,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "referrer": "Google",
-      "count": 27,
-      "uniques": 12,
-      "date": "2026-02-05"
+      "count": 26,
+      "uniques": 11,
+      "date": "2026-02-06"
     },
     {
       "referrer": "confluence.e-loreal.com",
       "count": 25,
       "uniques": 5,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "referrer": "digitalocean.com",
       "count": 11,
       "uniques": 5,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "referrer": "do-internal.atlassian.net",
       "count": 5,
       "uniques": 2,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "referrer": "com.reddit.frontpage",
       "count": 4,
       "uniques": 3,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     },
     {
       "referrer": "search.brave.com",
       "count": 1,
       "uniques": 1,
-      "date": "2026-02-05"
+      "date": "2026-02-06"
     }
   ]
 }
