@@ -29,7 +29,7 @@ This skill is an honest partner, not a magic wand. It:
 
 ```
 What's your source platform?
-├── Heroku (Procfile, app.json) → See Quick Start below
+├── Heroku (Procfile, app.json, heroku.yml) → See Heroku Deep Chapter below
 ├── Docker Compose → See Quick Start below
 ├── Render/Railway/Fly.io → See Quick Start below
 ├── AWS ECS/App Runner → Complex migration, see reference
@@ -42,7 +42,7 @@ What's your source platform?
 
 | Platform | Config Files | Support Level |
 |----------|--------------|---------------|
-| **Heroku** | `Procfile`, `app.json` | Full |
+| **Heroku** | `Procfile`, `app.json`, `heroku.yml` | Full (deep chapter) |
 | **Docker Compose** | `docker-compose.yml` | Full |
 | **Render** | `render.yaml` | Full |
 | **Railway** | `railway.json`, `railway.toml` | Full |
@@ -115,9 +115,18 @@ Phase 5: HANDOFF
 
 ---
 
-## Quick Mapping Reference
+## Heroku Migration (Deep Chapter)
 
-### Heroku
+For Heroku-specific migrations, a comprehensive chapter is available with deep knowledge of Procfile, app.json, heroku.yml, buildpacks, pipelines, add-ons, and CLI mapping.
+
+**Start here**: Read **[heroku-overview.md](reference/heroku/heroku-overview.md)** to determine the migration mode (Q&A, Guided, or Auto-Migrate), then follow the routing to:
+
+- **[heroku-concepts.md](reference/heroku/heroku-concepts.md)** — Heroku config file schemas, CLI commands, buildpack detection, pipeline structure
+- **[heroku-mapping.md](reference/heroku/heroku-mapping.md)** — Component types, build config, env vars, instance sizes, networking, regions
+- **[heroku-addons.md](reference/heroku/heroku-addons.md)** — Add-on detection from app.json, DO managed service equivalents, external alternatives
+- **[heroku-workflows.md](reference/heroku/heroku-workflows.md)** — Step-by-step procedures for Q&A, Guided, and Auto-Migrate modes
+
+### Quick Mapping (Heroku)
 
 | Heroku | App Platform |
 |--------|--------------|
@@ -127,6 +136,15 @@ Phase 5: HANDOFF
 | `heroku-postgresql` | Managed Postgres |
 | `heroku-redis` | Managed Valkey |
 | Config Vars | GitHub Secrets |
+| Pipelines | GitHub Actions |
+| Review Apps | Preview environments |
+| Heroku Scheduler | `jobs` (CRON_TRIGGER) |
+
+**Full mapping**: See [heroku-mapping.md](reference/heroku/heroku-mapping.md)
+
+---
+
+## Quick Mapping Reference
 
 ### Docker Compose
 
@@ -181,9 +199,19 @@ Phase 5: HANDOFF
 
 ## Reference Files
 
-- **[platform-mappings.md](reference/platform-mappings.md)** - Full platform detection, all mapping tables, gotchas
+### Heroku (Deep Chapter)
+
+- **[heroku-overview.md](reference/heroku/heroku-overview.md)** - Entry point: read first for any Heroku migration
+- **[heroku-concepts.md](reference/heroku/heroku-concepts.md)** - Procfile, app.json, heroku.yml, pipelines, CLI
+- **[heroku-mapping.md](reference/heroku/heroku-mapping.md)** - Deep Heroku → App Platform feature mapping
+- **[heroku-addons.md](reference/heroku/heroku-addons.md)** - Add-on ecosystem mapping (Postgres, Redis, etc.)
+- **[heroku-workflows.md](reference/heroku/heroku-workflows.md)** - Migration workflows: Q&A, Guided, Auto-Migrate
+
+### General
+
+- **[platform-mappings.md](reference/platform-mappings.md)** - All platform detection, mapping tables, gotchas
 - **[code-refactoring.md](reference/code-refactoring.md)** - Env var updates, S3/Valkey migration, data migration
-- **[workflow-examples.md](reference/workflow-examples.md)** - Heroku, Docker Compose, AWS ECS walkthroughs
+- **[workflow-examples.md](reference/workflow-examples.md)** - Docker Compose, AWS ECS walkthroughs
 - **[app-spec-generation.md](reference/app-spec-generation.md)** - Test/prod spec templates, defaults
 
 ---

@@ -32,7 +32,7 @@ This skill routes DigitalOcean App Platform tasks to specialized sub-skills. Eac
 | Skill | Purpose | Key Artifacts |
 |-------|---------|---------------|
 | **designer** | Natural language → production-ready App Spec | `.do/app.yaml` |
-| **migration** | Convert existing apps (Heroku, AWS, etc.) to App Platform | `.do/app.yaml`, migration checklist |
+| **migration** | Convert existing apps (Heroku, AWS, etc.) to App Platform. Deep Heroku chapter with Procfile/app.json/heroku.yml parsing, add-on mapping, pipeline migration | `.do/app.yaml`, migration checklist |
 | **planner** | Generate staged project plans from design to deployment | `Plan/*.md` stage files |
 
 ### Operations Phase
@@ -228,8 +228,8 @@ sandbox = Sandbox.create(image="python")
 4. Execute with **deployment** skill
 
 **"Migrate my Heroku app to DigitalOcean"**
-1. Start with **migration** → convert Procfile, analyze addons
-2. Creates `.do/app.yaml` (migration produces this)
+1. Start with **migration** → Heroku deep chapter auto-routes based on intent (Q&A, Guided, Auto-Migrate)
+2. Parses Procfile, app.json, heroku.yml, maps add-ons, generates `.do/app.yaml`
 3. Use **planner** → plan the staged deployment
 4. Execute with **deployment** skill
 
@@ -260,7 +260,7 @@ sandbox = Sandbox.create(image="python")
 |----------|----------------|
 | devcontainers | "local dev", "docker compose", "run locally", "devcontainer" |
 | designer | "design my app", "create app spec", "new application", "architect" |
-| migration | "migrate", "convert", "move from Heroku", "move from AWS" |
+| migration | "migrate", "convert", "move from Heroku", "move from AWS", "Heroku", "Procfile", "heroku.yml", "dynos", "Heroku add-ons", "Heroku pipeline" |
 | planner | "create a plan", "plan this project", "staged approach", "plan deployment", "how should I deploy" |
 | deployment | "deploy", "ship", "release", "GitHub Actions", "CI/CD" |
 | troubleshooting | "broken", "failing", "debug", "logs", "502", "crash", "error" |
