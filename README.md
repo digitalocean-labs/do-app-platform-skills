@@ -1,7 +1,7 @@
 # DigitalOcean App Platform Skills
 
-[![Tests](https://github.com/bikramkgupta/do-app-platform-skills/actions/workflows/test.yml/badge.svg)](https://github.com/bikramkgupta/do-app-platform-skills/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/bikramkgupta/do-app-platform-skills/graph/badge.svg)](https://codecov.io/gh/bikramkgupta/do-app-platform-skills)
+[![Tests](https://github.com/digitalocean-labs/do-app-platform-skills/actions/workflows/test.yml/badge.svg)](https://github.com/digitalocean-labs/do-app-platform-skills/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/digitalocean-labs/do-app-platform-skills/graph/badge.svg)](https://codecov.io/gh/digitalocean-labs/do-app-platform-skills)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -107,11 +107,11 @@ mkdir -p .claude/skills
 ```bash
 # Clone into your skills directory
 cd ~/.claude/skills  # or your preferred location
-git clone https://github.com/bikramkgupta/do-app-platform-skills.git
+git clone https://github.com/digitalocean-labs/do-app-platform-skills.git
 
 # Or clone into your project
 cd your-project
-git clone https://github.com/bikramkgupta/do-app-platform-skills.git .claude/skills/do-app-platform
+git clone https://github.com/digitalocean-labs/do-app-platform-skills.git .claude/skills/do-app-platform
 ```
 
 ### Step 3: Start Using Skills
