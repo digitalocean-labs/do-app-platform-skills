@@ -240,3 +240,24 @@ class TestSecureSetup:
         host = extract_host_from_url(url)
         
         assert host == "example-db.localhost"
+
+
+class TestAlembicTemplateSecurity:
+    """Regression tests for alembic template SQL safety."""
+
+    def test_search_path_uses_bound_parameter(self):
+        """Template should use SQLAlchemy bound parameter for search_path."""
+        template_path = (
+            Path(__file__).parent.parent.parent
+            / "skills"
+            / "postgres"
+            / "templates"
+            / "migrations"
+            / "alembic.template.py"
+        )
+
+        content = template_path.read_text()
+
+        assert "text(\"SELECT set_config('search_path', :schema, false)\")" in content
+        assert "connection.execute(f\"SET search_path TO {SCHEMA}\")" not in content
+        assert "connection.execute(\"SET search_path TO %s\"" not in content

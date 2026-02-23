@@ -24,8 +24,24 @@ Examples:
 import argparse
 import sys
 import os
+import re
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
+
+
+IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def validate_identifier(value: str, label: str) -> str:
+    """Validate SQL identifier for generated SQL output."""
+    if not IDENTIFIER_PATTERN.fullmatch(value):
+        raise ValueError(f"Invalid {label}: {value!r}. Use letters, digits, and underscores only.")
+    return value
+
+
+def sql_literal(value: str) -> str:
+    """Escape value as SQL string literal."""
+    return "'" + value.replace("'", "''") + "'"
 
 # SQL Templates
 SETUP_SQL_TEMPLATE = """-- ============================================
@@ -47,7 +63,7 @@ USERS_SQL_TEMPLATE = """-- ============================================
 -- SECURITY: Review password before executing
 -- Generate secure password with: openssl rand -base64 32
 
-CREATE USER {username} WITH PASSWORD '{password}';
+CREATE USER {username} WITH PASSWORD {password_literal};
 """
 
 PERMISSIONS_SQL_TEMPLATE = """-- ============================================
@@ -108,11 +124,15 @@ DATABASE_URL_WITH_SCHEMA=postgresql://{username}:{password}@HOST:25060/defaultdb
 def generate_sql(schema_name: str, username: str, password: str, output_dir: str = None):
     """Generate SQL files for schema/user setup."""
     timestamp = datetime.now().isoformat()
+
+    schema_name = validate_identifier(schema_name, "schema name")
+    username = validate_identifier(username, "username")
     
     context = {
         "schema_name": schema_name,
         "username": username,
         "password": password,
+        "password_literal": sql_literal(password),
         "timestamp": timestamp,
         "mode": "generate"
     }
@@ -169,6 +189,7 @@ def execute_sql(connection_string: str, schema_name: str, username: str, passwor
     """Execute SQL directly against database (dev/test only)."""
     try:
         import psycopg2
+        from psycopg2 import sql
     except ImportError:
         print("❌ psycopg2 not installed. Install with: uv pip install psycopg2-binary")
         sys.exit(1)
@@ -183,30 +204,64 @@ def execute_sql(connection_string: str, schema_name: str, username: str, passwor
         cur = conn.cursor()
         
         print(f"Creating schema: {schema_name}")
-        cur.execute(f'CREATE SCHEMA IF NOT EXISTS "{schema_name}"')
+        cur.execute(
+            sql.SQL("CREATE SCHEMA IF NOT EXISTS {}")
+            .format(sql.Identifier(schema_name))
+        )
         
         print(f"Creating user: {username}")
-        cur.execute(f"CREATE USER {username} WITH PASSWORD %s", (password,))
+        cur.execute(
+            sql.SQL("CREATE USER {} WITH PASSWORD %s")
+            .format(sql.Identifier(username)),
+            (password,)
+        )
         
         print(f"Granting permissions to {username} on schema {schema_name}")
         
-        cur.execute(f'GRANT USAGE ON SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA "{schema_name}" TO {username}')
+        cur.execute(
+            sql.SQL("GRANT USAGE ON SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
         
-        cur.execute(f'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON TABLES TO {username}')
-        cur.execute(f'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON SEQUENCES TO {username}')
-        cur.execute(f'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON FUNCTIONS TO {username}')
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON TABLES TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON SEQUENCES TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON FUNCTIONS TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
         
-        cur.execute(f'ALTER USER {username} SET search_path TO "{schema_name}"')
-        cur.execute(f'REVOKE ALL ON SCHEMA public FROM {username}')
+        cur.execute(
+            sql.SQL("ALTER USER {} SET search_path TO {}")
+            .format(sql.Identifier(username), sql.Identifier(schema_name))
+        )
+        cur.execute(
+            sql.SQL("REVOKE ALL ON SCHEMA public FROM {}")
+            .format(sql.Identifier(username))
+        )
         
         cur.close()
         
         print()
         print(f"✅ Created schema '{schema_name}' with user '{username}'")
-        print(f"✅ User isolated to schema (public revoked)")
+        print("✅ User isolated to schema (public revoked)")
         
         # Generate connection string for new user
         new_conn = build_connection_string(connection_string, username, password)

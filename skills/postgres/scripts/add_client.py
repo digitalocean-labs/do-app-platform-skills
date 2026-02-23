@@ -24,9 +24,25 @@ import argparse
 import subprocess
 import sys
 import os
+import re
 import secrets
 import string
 from urllib.parse import urlparse, parse_qs
+
+
+IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def validate_identifier(value: str, label: str) -> str:
+    """Validate SQL identifier for generated SQL output."""
+    if not IDENTIFIER_PATTERN.fullmatch(value):
+        raise ValueError(f"Invalid {label}: {value!r}. Use letters, digits, and underscores only.")
+    return value
+
+
+def sql_literal(value: str) -> str:
+    """Escape value as SQL string literal."""
+    return "'" + value.replace("'", "''") + "'"
 
 
 def generate_password(length: int = 32) -> str:
@@ -37,7 +53,9 @@ def generate_password(length: int = 32) -> str:
 
 def generate_sql(client_name: str, username: str, password: str, output_dir: str = None):
     """Generate SQL files for client setup."""
-    schema_name = client_name
+    schema_name = validate_identifier(client_name, "schema name")
+    username = validate_identifier(username, "username")
+    password_literal = sql_literal(password)
     
     setup_sql = f"""-- Client Setup: {client_name}
 \\c defaultdb
@@ -45,7 +63,7 @@ CREATE SCHEMA IF NOT EXISTS "{schema_name}";
 """
     
     users_sql = f"""-- User Setup: {client_name}
-CREATE USER {username} WITH PASSWORD '{password}';
+    CREATE USER {username} WITH PASSWORD {password_literal};
 """
     
     permissions_sql = f"""-- Permissions: {client_name}
@@ -84,6 +102,7 @@ def execute_setup(connection_string: str, client_name: str, username: str, passw
     """Execute client setup directly."""
     try:
         import psycopg2
+        from psycopg2 import sql
     except ImportError:
         print("❌ psycopg2 not installed. Install with: uv pip install psycopg2-binary")
         sys.exit(1)
@@ -98,21 +117,55 @@ def execute_setup(connection_string: str, client_name: str, username: str, passw
         
         print(f"Setting up client: {client_name}")
         
-        cur.execute(f'CREATE SCHEMA IF NOT EXISTS "{schema_name}"')
+        cur.execute(
+            sql.SQL("CREATE SCHEMA IF NOT EXISTS {}")
+            .format(sql.Identifier(schema_name))
+        )
         print(f"  ✅ Created schema: {schema_name}")
         
-        cur.execute(f"CREATE USER {username} WITH PASSWORD %s", (password,))
+        cur.execute(
+            sql.SQL("CREATE USER {} WITH PASSWORD %s")
+            .format(sql.Identifier(username)),
+            (password,)
+        )
         print(f"  ✅ Created user: {username}")
         
-        cur.execute(f'GRANT USAGE ON SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA "{schema_name}" TO {username}')
-        cur.execute(f'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON TABLES TO {username}')
-        cur.execute(f'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON SEQUENCES TO {username}')
-        cur.execute(f'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON FUNCTIONS TO {username}')
-        cur.execute(f'ALTER USER {username} SET search_path TO "{schema_name}"')
-        cur.execute(f'REVOKE ALL ON SCHEMA public FROM {username}')
+        cur.execute(
+            sql.SQL("GRANT USAGE ON SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON TABLES TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON SEQUENCES TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON FUNCTIONS TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER USER {} SET search_path TO {}")
+            .format(sql.Identifier(username), sql.Identifier(schema_name))
+        )
+        cur.execute(
+            sql.SQL("REVOKE ALL ON SCHEMA public FROM {}")
+            .format(sql.Identifier(username))
+        )
         print(f"  ✅ Configured permissions")
         
         cur.close()
