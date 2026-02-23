@@ -27,7 +27,7 @@
 import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 from alembic import context
 
 # Import your models
@@ -91,7 +91,10 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             # Set search_path for this transaction
-            connection.execute(f"SET search_path TO {SCHEMA}")
+            connection.execute(
+                text("SELECT set_config('search_path', :schema, false)"),
+                {"schema": SCHEMA},
+            )
             context.run_migrations()
 
 

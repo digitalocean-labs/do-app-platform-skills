@@ -129,6 +129,14 @@ def set_github_secret(repo: str, secret_name: str, value: str, env: str = None) 
 
 
 def main():
+    try:
+        import psycopg2
+        from psycopg2 import sql
+    except ImportError:
+        print("\033[91mError: psycopg2 is not installed\033[0m")
+        print("Install with: uv pip install psycopg2-binary")
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description="Secure hands-free database setup with GitHub Secrets",
         formatter_class=argparse.RawDescriptionHelpFormatter
@@ -198,47 +206,76 @@ def main():
     password = generate_password()
     
     print("\033[94mCreating schema and user...\033[0m")
-    
-    # Create schema
-    execute_sql(args.admin_url, f'CREATE SCHEMA IF NOT EXISTS "{schema_name}";')
-    
-    # Create user
-    if not execute_sql(args.admin_url, f"CREATE USER {username} WITH PASSWORD '{password}';"):
+
+    conn = None
+    try:
+        conn = psycopg2.connect(args.admin_url)
+        conn.autocommit = True
+        cur = conn.cursor()
+
+        cur.execute(
+            sql.SQL("CREATE SCHEMA IF NOT EXISTS {}")
+            .format(sql.Identifier(schema_name))
+        )
+
+        cur.execute(
+            sql.SQL("CREATE USER {} WITH PASSWORD %s")
+            .format(sql.Identifier(username)),
+            (password,)
+        )
+
+        print("\033[92m✓ User created\033[0m")
+        print("\033[94mGranting permissions...\033[0m")
+
+        cur.execute(
+            sql.SQL("GRANT USAGE ON SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA {} TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON TABLES TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON SEQUENCES TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER DEFAULT PRIVILEGES IN SCHEMA {} GRANT ALL ON FUNCTIONS TO {}")
+            .format(sql.Identifier(schema_name), sql.Identifier(username))
+        )
+        cur.execute(
+            sql.SQL("ALTER USER {} SET search_path TO {}")
+            .format(sql.Identifier(username), sql.Identifier(schema_name))
+        )
+        cur.execute(
+            sql.SQL("REVOKE ALL ON SCHEMA public FROM {}")
+            .format(sql.Identifier(username))
+        )
+
+        cur.close()
+        print("\033[92m✓ Permissions granted\033[0m")
+    except psycopg2.errors.DuplicateObject:
         print("\033[91mError creating user (may already exist)\033[0m")
         print("If user exists, use cleanup_client.py to remove first")
         sys.exit(1)
-    
-    print("\033[92m✓ User created\033[0m")
-    
-    # Grant permissions
-    print("\033[94mGranting permissions...\033[0m")
-    
-    permissions_sql = f'''
--- Grant schema access
-GRANT USAGE ON SCHEMA "{schema_name}" TO {username};
-
--- Grant full privileges on existing objects
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "{schema_name}" TO {username};
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO {username};
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA "{schema_name}" TO {username};
-
--- Grant privileges on future objects
-ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON TABLES TO {username};
-ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON SEQUENCES TO {username};
-ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL ON FUNCTIONS TO {username};
-
--- Set default search path
-ALTER USER {username} SET search_path TO "{schema_name}";
-
--- Revoke public schema access (isolation)
-REVOKE ALL ON SCHEMA public FROM {username};
-'''
-    
-    if not execute_sql_script(args.admin_url, permissions_sql):
-        print("\033[91mError granting permissions\033[0m")
+    except psycopg2.Error as e:
+        print(f"\033[91mDatabase error: {e}\033[0m")
         sys.exit(1)
-    
-    print("\033[92m✓ Permissions granted\033[0m")
+    finally:
+        if conn:
+            conn.close()
     
     # Build connection string
     database_url = f"postgresql://{username}:{password}@{db_host}:{db_port}/{args.db_name}?sslmode=require"

@@ -21,12 +21,30 @@ Example:
 import argparse
 import subprocess
 import sys
+import re
+
+
+IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def validate_identifier(value: str, label: str) -> str:
+    """Validate SQL identifier for generated SQL output."""
+    if not IDENTIFIER_PATTERN.fullmatch(value):
+        raise ValueError(f"Invalid {label}: {value!r}. Use letters, digits, and underscores only.")
+    return value
+
+
+def sql_literal(value: str) -> str:
+    """Escape value as SQL string literal."""
+    return "'" + value.replace("'", "''") + "'"
 
 
 def generate_sql(client_name: str, keep_user: bool = False):
     """Generate SQL for client cleanup."""
-    schema_name = client_name
-    username = f"{client_name}_user"
+    schema_name = validate_identifier(client_name, "schema name")
+    username = validate_identifier(f"{client_name}_user", "username")
+    username_literal = sql_literal(username)
+    schema_literal = sql_literal(schema_name)
     
     sql = f"""-- ============================================
 -- CLEANUP: {client_name}
@@ -36,7 +54,7 @@ def generate_sql(client_name: str, keep_user: bool = False):
 -- Step 1: Terminate active connections for user
 SELECT pg_terminate_backend(pid)
 FROM pg_stat_activity
-WHERE usename = '{username}';
+WHERE usename = {username_literal};
 
 """
     
@@ -52,13 +70,13 @@ DROP SCHEMA IF EXISTS "{schema_name}" CASCADE;
 
 -- Verify cleanup
 SELECT 'Schema exists:' AS check, 
-       EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = '{schema_name}') AS result;
+    EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = {schema_literal}) AS result;
 """
     
     if not keep_user:
         sql += f"""
 SELECT 'User exists:' AS check, 
-       EXISTS(SELECT 1 FROM pg_roles WHERE rolname = '{username}') AS result;
+    EXISTS(SELECT 1 FROM pg_roles WHERE rolname = {username_literal}) AS result;
 """
     
     return sql
@@ -68,6 +86,7 @@ def execute_cleanup(connection_string: str, client_name: str, keep_user: bool = 
     """Execute client cleanup."""
     try:
         import psycopg2
+        from psycopg2 import sql
     except ImportError:
         print("❌ psycopg2 not installed. Install with: uv pip install psycopg2-binary")
         sys.exit(1)
@@ -94,20 +113,29 @@ def execute_cleanup(connection_string: str, client_name: str, keep_user: bool = 
         if not keep_user:
             # Drop owned objects first
             try:
-                cur.execute(f"DROP OWNED BY {username} CASCADE")
+                cur.execute(
+                    sql.SQL("DROP OWNED BY {} CASCADE")
+                    .format(sql.Identifier(username))
+                )
                 print(f"  ✅ Dropped objects owned by {username}")
             except psycopg2.errors.UndefinedObject:
                 pass  # User doesn't exist
             
             # Drop user
             try:
-                cur.execute(f"DROP USER IF EXISTS {username}")
+                cur.execute(
+                    sql.SQL("DROP USER IF EXISTS {}")
+                    .format(sql.Identifier(username))
+                )
                 print(f"  ✅ Dropped user: {username}")
             except psycopg2.Error as e:
                 print(f"  ⚠️  Could not drop user: {e}")
         
         # Drop schema
-        cur.execute(f'DROP SCHEMA IF EXISTS "{schema_name}" CASCADE')
+        cur.execute(
+            sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE")
+            .format(sql.Identifier(schema_name))
+        )
         print(f"  ✅ Dropped schema: {schema_name}")
         
         cur.close()
