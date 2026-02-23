@@ -7,6 +7,18 @@
 
 Claude/Agent skills for DigitalOcean App Platform - deployment, migration, networking, database configuration, and troubleshooting.
 
+## Documentation Hub
+
+For maintainer-grade architecture, security, testing strategy, governance, and release documentation, see [Docs/README.md](Docs/README.md).
+
+Recommended entry points:
+
+- [Project Overview](Docs/project-overview.md)
+- [Architecture](Docs/architecture.md)
+- [Security Model](Docs/security-model.md)
+- [Operations Runbook](Docs/operations-runbook.md)
+- [Release and Versioning](Docs/release-and-versioning.md)
+
 ## Version Compatibility
 
 ### Tool Requirements
