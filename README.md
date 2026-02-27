@@ -69,9 +69,12 @@ pip install -r requirements-dev.txt
 
 # 4) Authenticate doctl (required for platform-integrated workflows)
 doctl auth init
+# Verify it works
+doctl account get
 
 # 5) Run baseline validation/tests
 python scripts/validate_skills.py
+make lint
 pytest -q
 ```
 
@@ -137,6 +140,9 @@ Use the repository by selecting the skill matching your current objective and ch
 # Validate repository skill content and structure
 python scripts/validate_skills.py
 
+# Lint YAML configuration and shared metadata
+make lint
+
 # Run all tests
 pytest -q
 
@@ -175,6 +181,8 @@ See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
 ## Contributing
 
 We welcome community contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Please also review [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 Additional contributor references:
 

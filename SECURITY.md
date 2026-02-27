@@ -1,38 +1,23 @@
 # Security Policy
 
-## Reporting a Vulnerability
+DigitalOcean values the security of our open-source projects. We appreciate the efforts of security researchers and the broader community to help keep our customers and business safe.
 
-If you discover a security vulnerability in this repository, please report it responsibly.
+## Bug Bounty Program
 
-- Do **not** open a public issue with exploit details.
-- Contact maintainers through private channels first.
-- Include reproduction steps, impact, and affected files where possible.
+We operate a public bug bounty program on Intigriti. This program is designed to incentivize the responsible disclosure of security vulnerabilities.
 
-## What to Include
+## In-Scope Repositories
 
-To speed triage, include:
+Only repositories listed on the Intigriti program page are eligible for rewards under the bug bounty program.
 
-- A clear description of the issue
-- Impact assessment and likely blast radius
-- Reproduction steps or proof of concept
-- Suggested mitigation (if available)
+If you discover a vulnerability in a repository not listed on the Intigriti page, we still encourage you to report it. While such findings are not eligible for monetary rewards, we value your contribution to the security of our open-source projects.
 
-## Response Expectations
+Please do not open public issues describing vulnerabilities. Instead, send any ineligible findings to security@digitalocean.com. If you wish to encrypt your communication, follow these instructions.
 
-Maintainers will aim to:
+## Guidelines
 
-1. Acknowledge receipt promptly
-2. Validate and triage severity
-3. Provide remediation plan and timeline
-4. Publish fix notes after patching
+- Responsible Disclosure: Please do not publicly disclose the vulnerability without written permission from DigitalOcean.
+- Clear Description: Provide a detailed description of the vulnerability, including steps to reproduce it and any relevant proof-of-concept code.
+- Impact Assessment: Help us understand the potential impact of the vulnerability.
 
-## Scope
-
-Security-relevant areas in this repository include:
-
-- credential handling patterns in scripts and docs
-- SQL construction/execution safety in helper scripts
-- generated artifacts that may be executed by users/agents
-- CI/testing controls that prevent security regressions
-
-For implementation guidance, see [Docs/security-model.md](Docs/security-model.md).
+We are committed to working with you to resolve security issues in a timely and responsible manner. Thank you for your help in keeping DigitalOcean and our community secure!
