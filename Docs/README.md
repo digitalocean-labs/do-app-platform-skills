@@ -15,6 +15,7 @@ This folder contains long-form project documentation for maintainers, contributo
 - [Project Overview](project-overview.md)
 - [Architecture](architecture.md)
 - [Skills and Content Model](skills-and-content-model.md)
+- [User Guide](user-guide.md)
 
 ### Engineering and Operations
 

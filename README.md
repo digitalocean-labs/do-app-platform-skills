@@ -1,258 +1,191 @@
 # DigitalOcean App Platform Skills
 
-[![Tests](https://github.com/digitalocean-labs/do-app-platform-skills/actions/workflows/test.yml/badge.svg)](https://github.com/digitalocean-labs/do-app-platform-skills/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/digitalocean-labs/do-app-platform-skills/graph/badge.svg)](https://codecov.io/gh/digitalocean-labs/do-app-platform-skills)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+DigitalOcean App Platform Skills is an open-source, production-focused skills repository for AI coding assistants that helps engineers design, migrate, deploy, and operate applications on DigitalOcean App Platform. It is for platform engineers, backend/full-stack developers, DevOps teams, and AI-agent workflow builders who want repeatable App Platform outcomes using structured skill playbooks.
 
-Claude/Agent skills for DigitalOcean App Platform - deployment, migration, networking, database configuration, and troubleshooting.
+## Overview
 
-## Documentation Hub
+This repository provides modular “skills” that combine concise routing guidance (`SKILL.md`), deeper reference material, templates, and optional scripts for specific App Platform domains.
 
-For maintainer-grade architecture, security, testing strategy, governance, and release documentation, see [Docs/README.md](Docs/README.md).
+At a high level, the project enables a workflow where an AI assistant can:
 
-Recommended entry points:
+1. Interpret an engineering goal (for example: “migrate my Heroku app to DigitalOcean”).
+2. Load the most relevant skill(s).
+3. Generate or refine concrete artifacts (for example: `.do/app.yaml`, workflow definitions, migration checklists, SQL scripts, troubleshooting reports).
+4. Follow opinionated, secure defaults aligned with DigitalOcean App Platform practices.
 
-- [Project Overview](Docs/project-overview.md)
-- [Architecture](Docs/architecture.md)
-- [Security Model](Docs/security-model.md)
-- [Operations Runbook](Docs/operations-runbook.md)
-- [Release and Versioning](Docs/release-and-versioning.md)
+### Repository Architecture
 
-## Version Compatibility
+- `skills/` contains domain-specific skills (designer, deployment, migration, networking, postgres, troubleshooting, and more).
+- `shared/` contains cross-cutting references and canonical schema/config artifacts (including `skill-schema.json`, regions/instance-size defaults, and platform patterns).
+- `architecture/Docs/` contains project-level architecture, governance, quality strategy, and operational guidance.
+- `scripts/` contains validation and analytics tooling for repository quality and usage analysis.
+- `tests/` contains comprehensive Python test suites for workflows, validation logic, edge cases, and skill-specific behavior.
 
-### Tool Requirements
+### Documentation Map
 
-| Tool | Minimum Version | Recommended | Notes |
-|------|-----------------|-------------|-------|
-| doctl | 1.82.0+ | 1.100.0+ | App spec v2 support |
-| Python | 3.11+ | 3.12+ | For scripts |
-| Node.js | 20+ | 22+ | LTS versions |
-| PostgreSQL | 15+ | 16 | Default: 16 |
-
-### Skills Version
-
-All skills in this repository are versioned. Check each skill's frontmatter for:
-- `version`: Semantic version (MAJOR.MINOR.PATCH)
-- `min_doctl_version`: Minimum doctl CLI version required
-
-```yaml
-# Example from SKILL.md frontmatter
----
-name: app-platform-designer
-version: 1.0.0
-min_doctl_version: "1.82.0"
----
-```
-
-### API Compatibility Matrix
-
-| Skills Version | doctl Version | App Spec Version | Status |
-|----------------|---------------|------------------|--------|
-| 1.0.x | 1.82.0+ | v2 | ✅ Current |
-
-### Checking Your doctl Version
-
-```bash
-doctl version
-# doctl version 1.100.0-release
-
-# Update if needed
-brew upgrade doctl  # macOS
-snap refresh doctl  # Linux
-```
-
-## What Are Skills?
-
-Skills are structured prompts and documentation that help AI assistants (like Claude) perform specialized tasks. Each skill contains domain knowledge, best practices, code patterns, and decision trees for a specific area of App Platform.
-
-## Prerequisites
-
-Before using these skills, ensure you have:
-
-| Tool | Required | Purpose |
-|------|----------|---------|
-| **doctl** | ✅ Yes | DigitalOcean CLI for deployments and management |
-| **DO API Token** | ✅ Yes | Authentication ([create one here](https://cloud.digitalocean.com/account/api/tokens)) |
-| **git** | ✅ Yes | Clone repos, manage deployments |
-| **gh** | Optional | GitHub CLI for creating repos, PRs, workflows |
-| **docker** | Optional | Local testing, building container images |
-
-### Quick Setup
-
-```bash
-# Install doctl (macOS)
-brew install doctl
-
-# Or on Linux
-snap install doctl
-
-# Authenticate with your API token
-doctl auth init
-
-# Verify it works
-doctl account get
-```
+- Project architecture and governance: [architecture/Docs/README.md](architecture/Docs/README.md)
+- Skill authoring model and standards: [architecture/Docs/skills-and-content-model.md](architecture/Docs/skills-and-content-model.md)
+- Testing strategy: [TESTING.md](TESTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
 
 ## Getting Started
 
-### Step 1: Set Up Skills Directory
+### Prerequisites
 
-Create a skills directory for your AI assistant of choice:
+Before using or contributing to this repository, ensure the following are available:
+
+- **Operating system:** macOS, Linux, or Windows with a POSIX-compatible shell environment recommended.
+- **Python:** `3.11+` (recommended `3.12`) for local scripts and test tooling.
+- **DigitalOcean CLI (`doctl`):** `1.82.0+` (recommended `1.100.0+`) for App Spec v2 compatibility and platform operations.
+- **Node.js:** `20+` (recommended `22 LTS`) when working with Node-based target applications in examples/workflows.
+- **Git:** latest stable for repository workflows.
+- **DigitalOcean account + API token:** required for authenticated platform operations and deployment testing.
+- **Optional tooling:** `gh` (GitHub CLI), Docker, and PostgreSQL client utilities for deeper local validation workflows.
+
+Recommended version check commands:
 
 ```bash
-# For Claude Code
-mkdir -p ~/.claude/skills
-
-# For Codex
-mkdir -p ~/.codex/skills
-
-# For Cursor
-mkdir -p ~/.cursor/skills
-
-# Or in your project root
-mkdir -p .claude/skills
+python3 --version
+doctl version
+node --version
+git --version
 ```
 
-### Step 2: Clone This Repository
+### Installation
+
+Clone the repository and set up a local development environment:
 
 ```bash
-# Clone into your skills directory
-cd ~/.claude/skills  # or your preferred location
+# 1) Clone repository
 git clone https://github.com/digitalocean-labs/do-app-platform-skills.git
+cd do-app-platform-skills
 
-# Or clone into your project
-cd your-project
-git clone https://github.com/digitalocean-labs/do-app-platform-skills.git .claude/skills/do-app-platform
+# 2) Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3) Install development dependencies
+pip install -r requirements-dev.txt
+
+# 4) Authenticate doctl (required for platform-integrated workflows)
+doctl auth init
+
+# 5) Run baseline validation/tests
+python scripts/validate_skills.py
+pytest -q
 ```
 
-### Step 3: Start Using Skills
+Install as an assistant skill source (example paths):
 
-Just describe what you want and ask to use App Platform skills:
+```bash
+# Claude Code
+mkdir -p ~/.claude/skills
+ln -s "$PWD" ~/.claude/skills/do-app-platform-skills
 
-```
-"I want to deploy my Python FastAPI app with PostgreSQL. Use the App Platform skills."
+# Codex
+mkdir -p ~/.codex/skills
+ln -s "$PWD" ~/.codex/skills/do-app-platform-skills
 
-"Migrate my Heroku app to DigitalOcean. Use App Platform skills to help."
-
-"My app is crashing on startup. Use App Platform troubleshooting skills to debug."
-```
-
-### For Complex Tasks
-
-For larger projects, ask for a detailed plan:
-
-```
-"I need to set up a multi-service architecture with API, worker, and database.
-Use App Platform skills and create a detailed plan in the /plan folder before implementing."
+# Cursor
+mkdir -p ~/.cursor/skills
+ln -s "$PWD" ~/.cursor/skills/do-app-platform-skills
 ```
 
-This creates structured plan files you can review before execution.
+### Quick Start
 
-## Example Prompts
+Minimal workflow to begin using this project in an AI-assisted session:
 
-| What You Want | Example Prompt |
-|--------------|----------------|
-| **Create a new app** | "Create an App Spec for my Node.js API with Redis caching. Use App Platform skills." |
-| **Migrate from Heroku** | "Migrate this Heroku app to App Platform. Use the migration skill." |
-| **Troubleshoot issues** | "My database connections are timing out. Use App Platform troubleshooting to diagnose." |
-| **Set up CI/CD** | "Set up GitHub Actions to deploy on push to main. Use deployment skills." |
-| **Configure networking** | "I need custom domain with SSL and CORS headers. Use networking skills." |
-| **Database setup** | "Configure PostgreSQL with connection pooling for my Django app. Use postgres skills." |
+1. Open your application repository in your AI coding assistant.
+2. Ensure this repository is available as a skill source (cloned or linked).
+3. Use a focused instruction that references App Platform skills explicitly.
 
-## Available Skills
+Example prompt:
 
-| Skill | Description | Key Artifacts |
-|-------|-------------|---------------|
-| [**designer**](skills/designer/) | Natural language → production-ready App Spec | `.do/app.yaml` |
-| [**deployment**](skills/deployment/) | GitHub Actions CI/CD and deployment workflows | `.github/workflows/` |
-| [**migration**](skills/migration/) | Migrate from Heroku, AWS, Docker Compose, etc. | `.do/app.yaml`, checklist |
-| [**networking**](skills/networking/) | Domains, routing, CORS, VPC, static IPs | App spec snippets |
-| [**postgres**](skills/postgres/) | PostgreSQL configuration, security, multi-tenant | SQL scripts |
-| [**managed-db-services**](skills/managed-db-services/) | MySQL, MongoDB, Valkey, Kafka, OpenSearch | App spec snippets |
-| [**spaces**](skills/spaces/) | S3-compatible object storage | CORS config |
-| [**ai-services**](skills/ai-services/) | Gradient AI serverless inference | App spec snippets |
-| [**troubleshooting**](skills/troubleshooting/) | Debug running apps with container access | Diagnostic reports |
-| [**devcontainers**](skills/devcontainers/) | Local development with production parity | `.devcontainer/` |
-
-## Alternative Usage Methods
-
-### With Claude Projects (claude.ai)
-
-1. Create a new Claude Project
-2. Add the relevant `SKILL.md` files to the project knowledge
-3. Start chatting about your App Platform needs
-
-### Direct Context Injection
-
-Copy the contents of any `SKILL.md` file into your conversation with any AI assistant as context.
-
-## Philosophy
-
-These skills are **opinionated playbooks**, not documentation replicas:
-
-- They make decisions (VPC by default, GitHub Actions for CI/CD)
-- They generate artifacts (app specs, workflows, scripts)
-- They defer to docs only for edge cases
-- They never handle credentials directly
-
-**Key principle**: Skills only contain DO-specific knowledge the LLM doesn't have from training.
-
-## Skill Structure
-
-```
-skills/
-├── skill-name/
-│   ├── README.md      # Quick overview and when to use
-│   ├── SKILL.md       # Concise router (150-350 lines)
-│   ├── reference/     # Detailed docs (loaded on-demand)
-│   ├── templates/     # (optional) Reusable templates
-│   └── scripts/       # (optional) Helper scripts
+```text
+Create a production-ready App Platform spec for my Python FastAPI API with managed PostgreSQL.
+Use the DigitalOcean App Platform skills and output .do/app.yaml with secure defaults.
 ```
 
-## Skill Dependency Graph
+Expected output from a typical first run:
 
+- Initial `.do/app.yaml` scaffold suitable for App Platform.
+- Service/database wiring guidance.
+- Follow-up recommendations for CI/CD and troubleshooting skill handoff.
+
+## Usage
+
+Use the repository by selecting the skill matching your current objective and chaining skills as work matures from design to operations.
+
+### Typical Skill Selection Flow
+
+- **Design / first App Spec:** start with `skills/designer/`
+- **Migration from other platforms:** use `skills/migration/`
+- **CI/CD and release workflows:** use `skills/deployment/`
+- **Network, domains, CORS, VPC:** use `skills/networking/`
+- **PostgreSQL and data-layer concerns:** use `skills/postgres/` and `skills/managed-db-services/`
+- **Production diagnosis and incident response:** use `skills/troubleshooting/`
+
+### Common Usage Patterns
+
+- **Greenfield:** Designer → Deployment → Troubleshooting
+- **Lift-and-shift migration:** Migration → Designer refinements → Deployment
+- **Database-centric modernization:** Postgres/Managed DB → Designer integration → Deployment
+
+### Validation and Quality Commands
+
+```bash
+# Validate repository skill content and structure
+python scripts/validate_skills.py
+
+# Run all tests
+pytest -q
+
+# Run targeted suites (examples)
+pytest tests/test_migration -q
+pytest tests/test_validation -q
 ```
-                    ┌─────────────┐
-                    │  designer   │
-                    └──────┬──────┘
-                           │ produces .do/app.yaml
-                           ▼
-┌─────────────┐     ┌─────────────┐     ┌───────────────┐
-│  migration  │────▶│ deployment  │────▶│troubleshooting│
-└─────────────┘     └─────────────┘     └───────────────┘
 
-    ┌──────────┐  ┌────────────┐  ┌────────────┐
-    │ postgres │  │managed-db  │  │ networking │
-    └──────────┘  └────────────┘  └────────────┘
-         └──────────────┼──────────────┘
-                        ▼
-             (referenced by designer)
-```
+For deeper system design and operating guidance, see:
 
-## Credential Safety
+- [architecture/Docs/developer-guide.md](architecture/Docs/developer-guide.md)
+- [architecture/Docs/operations-runbook.md](architecture/Docs/operations-runbook.md)
+- [architecture/Docs/testing-and-quality.md](architecture/Docs/testing-and-quality.md)
 
-All skills follow this priority:
+## Roadmap / Status
 
-1. **GitHub Secrets** — Recommended, agent never sees credentials
-2. **Bindable Variables** — `${db.DATABASE_URL}` injected automatically
-3. **External Systems** — User manages entirely
+**Status: Active development and production-oriented hardening.**
+
+Current maturity characteristics:
+
+- Broad skill coverage across design, migration, deployment, networking, database, and troubleshooting domains.
+- Established validation and test infrastructure with targeted edge-case coverage.
+- Ongoing improvements to skill quality, reference depth, and workflow robustness.
+
+Near-term roadmap themes:
+
+- Expand and refine high-value migration/deployment templates.
+- Strengthen schema and rule validation for safer agent output.
+- Improve analytics-driven iteration on skill usefulness and discoverability.
+- Continue quality and governance alignment for open-source collaboration at scale.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
 
 ## Contributing
 
-Contributions welcome! Please:
+We welcome community contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-1. Follow the existing skill structure
-2. Include practical examples and code snippets
-3. Document limitations and gotchas
-4. Test with Claude before submitting
+Additional contributor references:
+
+- [CLAUDE.md](CLAUDE.md)
+- [SKILL.md](SKILL.md)
+- [architecture/Docs/governance.md](architecture/Docs/governance.md)
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file.
 
-## Resources
+## Trademarks
 
-- [App Platform Documentation](https://docs.digitalocean.com/products/app-platform/)
-- [App Spec Reference](https://docs.digitalocean.com/products/app-platform/reference/app-spec/)
-- [doctl CLI](https://docs.digitalocean.com/reference/doctl/)
+DigitalOcean and related marks are trademarks of DigitalOcean.
