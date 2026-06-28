@@ -1,109 +1,115 @@
 {
-  "generated_at": "2026-06-21T05:57:11.952080+00:00",
+  "generated_at": "2026-06-28T05:45:53.012955+00:00",
   "summary": {
-    "total_views": 97,
-    "unique_visitors": 43,
-    "total_clones": 664,
-    "unique_cloners": 244,
+    "total_views": 119,
+    "unique_visitors": 40,
+    "total_clones": 750,
+    "unique_cloners": 276,
     "popular_paths_count": 10,
-    "referrers_count": 4
+    "referrers_count": 5
   },
   "top_content": [
     {
       "path": "/digitalocean-labs/do-app-platform-skills",
       "title": "Overview",
-      "count": 48,
-      "uniques": 36,
-      "date": "2026-06-21"
+      "count": 52,
+      "uniques": 34,
+      "date": "2026-06-28"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
       "title": "/tree/main/skills",
-      "count": 15,
-      "uniques": 13,
-      "date": "2026-06-21"
+      "count": 16,
+      "uniques": 12,
+      "date": "2026-06-28"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/deployment",
+      "title": "/tree/main/skills/deployment",
+      "count": 4,
+      "uniques": 4,
+      "date": "2026-06-28"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/deployment/SKILL.md",
+      "title": "/blob/main/skills/deployment/SKILL.md",
+      "count": 3,
+      "uniques": 3,
+      "date": "2026-06-28"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/designer",
+      "title": "/tree/main/skills/designer",
+      "count": 3,
+      "uniques": 3,
+      "date": "2026-06-28"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main",
       "title": "/tree/main",
       "count": 3,
       "uniques": 2,
-      "date": "2026-06-21"
+      "date": "2026-06-28"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/SKILL.md",
       "title": "/blob/main/SKILL.md",
       "count": 2,
       "uniques": 2,
-      "date": "2026-06-21"
+      "date": "2026-06-28"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/designer",
-      "title": "/tree/main/skills/designer",
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/designer/SKILL.md",
+      "title": "/blob/main/skills/designer/SKILL.md",
       "count": 2,
       "uniques": 2,
-      "date": "2026-06-21"
+      "date": "2026-06-28"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/planner",
-      "title": "/tree/main/skills/planner",
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/architecture",
+      "title": "/tree/main/architecture",
       "count": 2,
       "uniques": 2,
-      "date": "2026-06-21"
+      "date": "2026-06-28"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/SECURITY.md",
-      "title": "/blob/main/SECURITY.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-06-21"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/TESTING.md",
-      "title": "/blob/main/TESTING.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-06-21"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/architecture/Docs/README.md",
-      "title": "/blob/main/architecture/Docs/README.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-06-21"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/architecture/Docs/skills-and-content-model.md",
-      "title": "/blob/main/architecture/Docs/skills-and-content-model.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-06-21"
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/ai-services",
+      "title": "/tree/main/skills/ai-services",
+      "count": 2,
+      "uniques": 2,
+      "date": "2026-06-28"
     }
   ],
   "top_referrers": [
     {
       "referrer": "Google",
-      "count": 57,
-      "uniques": 28,
-      "date": "2026-06-21"
-    },
-    {
-      "referrer": "github.com",
-      "count": 16,
-      "uniques": 6,
-      "date": "2026-06-21"
+      "count": 49,
+      "uniques": 21,
+      "date": "2026-06-28"
     },
     {
       "referrer": "digitalocean.com",
-      "count": 5,
-      "uniques": 1,
-      "date": "2026-06-21"
+      "count": 36,
+      "uniques": 4,
+      "date": "2026-06-28"
+    },
+    {
+      "referrer": "github.com",
+      "count": 18,
+      "uniques": 7,
+      "date": "2026-06-28"
+    },
+    {
+      "referrer": "search.brave.com",
+      "count": 2,
+      "uniques": 2,
+      "date": "2026-06-28"
     },
     {
       "referrer": "DuckDuckGo",
       "count": 1,
       "uniques": 1,
-      "date": "2026-06-21"
+      "date": "2026-06-28"
     }
   ]
 }
