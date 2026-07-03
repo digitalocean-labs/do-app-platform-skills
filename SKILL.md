@@ -5,6 +5,8 @@ min_doctl_version: "1.82.0"
 description: Routes DigitalOcean App Platform tasks to specialized sub-skills. Use when working with App Platform deployments, migrations, database configuration, networking, or troubleshooting.
 related_skills: [designer, deployment, migration, postgres, managed-db-services, networking, spaces, ai-services, troubleshooting, devcontainers, sandbox, planner]
 deprecated: false
+metadata:
+  internal: true
 ---
 
 # App Platform Skills — Router
