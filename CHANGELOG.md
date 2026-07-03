@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **`npx skills add` now discovers all 12 skills by default.** Previously, the top-level `SKILL.md` router shadowed nested skills under `skills/*/SKILL.md`, so `npx skills add digitalocean-labs/do-app-platform-skills` (and `--list`, `--skill '*'`) only returned the router — not the 12 skills the README/blog advertised. The root `SKILL.md` now sets `metadata.internal: true`, which tells the `skills` CLI to skip the router during enumeration so the 12 sub-skills surface without needing `--full-depth`. Verified locally: `npx skills add ./ --list` now reports "Found 12 skills". (ESC-24068)
+
+### Changed
+- `shared/skill-schema.json`: added optional `metadata` object (with `metadata.internal: boolean`) to the frontmatter schema so the validator accepts the router's new field. Additional metadata keys are permitted so future CLI-side fields don't require schema churn.
 
 ## [0.1.2] - 2026-01-22
 

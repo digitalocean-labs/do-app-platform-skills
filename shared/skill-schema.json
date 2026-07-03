@@ -54,6 +54,18 @@
       "description": "Date when deprecated skill will be removed (ISO 8601 format)",
       "format": "date",
       "examples": ["2026-06-01"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional metadata consumed by skill discovery tools (e.g. the `skills` CLI). Unknown keys are permitted so upstream tooling can evolve without schema churn.",
+      "properties": {
+        "internal": {
+          "type": "boolean",
+          "description": "If true, this SKILL.md is treated as a router/wrapper and is hidden from default `skills add --list` output. Nested skills under `skills/<name>/SKILL.md` are then discovered instead. See https://github.com/vercel-labs/skills discovery rules.",
+          "default": false
+        }
+      },
+      "additionalProperties": true
     }
   },
   "if": {
