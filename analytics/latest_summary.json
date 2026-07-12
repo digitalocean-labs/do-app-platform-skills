@@ -1,109 +1,121 @@
 {
-  "generated_at": "2026-07-05T05:40:24.685512+00:00",
+  "generated_at": "2026-07-12T05:26:26.166793+00:00",
   "summary": {
-    "total_views": 219,
-    "unique_visitors": 52,
-    "total_clones": 581,
-    "unique_cloners": 257,
+    "total_views": 205,
+    "unique_visitors": 61,
+    "total_clones": 509,
+    "unique_cloners": 229,
     "popular_paths_count": 10,
-    "referrers_count": 4
+    "referrers_count": 6
   },
   "top_content": [
     {
       "path": "/digitalocean-labs/do-app-platform-skills",
       "title": "Overview",
-      "count": 66,
-      "uniques": 38,
-      "date": "2026-07-05"
+      "count": 59,
+      "uniques": 37,
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
       "title": "/tree/main/skills",
-      "count": 21,
-      "uniques": 12,
-      "date": "2026-07-05"
+      "count": 15,
+      "uniques": 10,
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/pull/12",
       "title": "/pull/12",
-      "count": 10,
-      "uniques": 3,
-      "date": "2026-07-05"
+      "count": 13,
+      "uniques": 6,
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main",
       "title": "/tree/main",
-      "count": 9,
-      "uniques": 2,
-      "date": "2026-07-05"
+      "count": 10,
+      "uniques": 3,
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/SKILL.md",
       "title": "/blob/main/SKILL.md",
+      "count": 8,
+      "uniques": 4,
+      "date": "2026-07-12"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/pulls",
+      "title": "/pulls",
       "count": 7,
-      "uniques": 2,
-      "date": "2026-07-05"
+      "uniques": 6,
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/pull/13",
       "title": "/pull/13",
       "count": 6,
       "uniques": 2,
-      "date": "2026-07-05"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/deployment",
-      "title": "/tree/main/skills/deployment",
-      "count": 5,
-      "uniques": 4,
-      "date": "2026-07-05"
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/networking",
       "title": "/tree/main/skills/networking",
-      "count": 5,
-      "uniques": 4,
-      "date": "2026-07-05"
+      "count": 4,
+      "uniques": 3,
+      "date": "2026-07-12"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/shared",
       "title": "/tree/main/shared",
-      "count": 5,
+      "count": 4,
       "uniques": 1,
-      "date": "2026-07-05"
+      "date": "2026-07-12"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/pulls",
-      "title": "/pulls",
-      "count": 4,
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/shared/AppSpec-Reference.md",
+      "title": "/blob/main/shared/AppSpec-Reference.md",
+      "count": 3,
       "uniques": 3,
-      "date": "2026-07-05"
+      "date": "2026-07-12"
     }
   ],
   "top_referrers": [
     {
+      "referrer": "github.com",
+      "count": 44,
+      "uniques": 12,
+      "date": "2026-07-12"
+    },
+    {
       "referrer": "Google",
-      "count": 45,
-      "uniques": 20,
-      "date": "2026-07-05"
+      "count": 28,
+      "uniques": 15,
+      "date": "2026-07-12"
     },
     {
       "referrer": "digitalocean.com",
-      "count": 43,
-      "uniques": 4,
-      "date": "2026-07-05"
+      "count": 9,
+      "uniques": 3,
+      "date": "2026-07-12"
     },
     {
-      "referrer": "github.com",
-      "count": 19,
-      "uniques": 6,
-      "date": "2026-07-05"
+      "referrer": "claude.ai",
+      "count": 6,
+      "uniques": 1,
+      "date": "2026-07-12"
+    },
+    {
+      "referrer": "kagi.com",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-07-12"
     },
     {
       "referrer": "search.brave.com",
-      "count": 3,
-      "uniques": 3,
-      "date": "2026-07-05"
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-07-12"
     }
   ]
 }
