@@ -1,115 +1,121 @@
 {
-  "generated_at": "2026-09-06T04:28:19.293187+00:00",
+  "generated_at": "2026-09-13T04:29:08.842880+00:00",
   "summary": {
-    "total_views": 94,
-    "unique_visitors": 34,
-    "total_clones": 342,
-    "unique_cloners": 193,
+    "total_views": 50,
+    "unique_visitors": 23,
+    "total_clones": 340,
+    "unique_cloners": 204,
     "popular_paths_count": 10,
-    "referrers_count": 5
+    "referrers_count": 6
   },
   "top_content": [
     {
       "path": "/digitalocean-labs/do-app-platform-skills",
       "title": "Overview",
-      "count": 36,
-      "uniques": 25,
-      "date": "2026-09-06"
+      "count": 27,
+      "uniques": 17,
+      "date": "2026-09-13"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
       "title": "/tree/main/skills",
-      "count": 10,
-      "uniques": 6,
-      "date": "2026-09-06"
+      "count": 4,
+      "uniques": 2,
+      "date": "2026-09-13"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/deployment",
       "title": "/tree/main/skills/deployment",
-      "count": 5,
-      "uniques": 4,
-      "date": "2026-09-06"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main",
-      "title": "/tree/main",
-      "count": 4,
-      "uniques": 3,
-      "date": "2026-09-06"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/SKILL.md",
-      "title": "/blob/main/SKILL.md",
-      "count": 3,
+      "count": 2,
       "uniques": 2,
-      "date": "2026-09-06"
+      "date": "2026-09-13"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/architecture/Docs/skills-and-content-model.md",
-      "title": "/blob/main/architecture/Docs/skills-and-content-model.md",
-      "count": 3,
-      "uniques": 2,
-      "date": "2026-09-06"
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/spaces",
+      "title": "/tree/main/skills/spaces",
+      "count": 2,
+      "uniques": 1,
+      "date": "2026-09-13"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/architecture/AGENT-WORKFLOWS.md",
+      "title": "/blob/main/architecture/AGENT-WORKFLOWS.md",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/architecture/Docs/README.md",
       "title": "/blob/main/architecture/Docs/README.md",
-      "count": 2,
-      "uniques": 2,
-      "date": "2026-09-06"
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/architecture/Docs/governance.md",
       "title": "/blob/main/architecture/Docs/governance.md",
-      "count": 2,
-      "uniques": 2,
-      "date": "2026-09-06"
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/deployment/SKILL.md",
-      "title": "/blob/main/skills/deployment/SKILL.md",
-      "count": 2,
-      "uniques": 2,
-      "date": "2026-09-06"
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/deployment/reference/command-reference.md",
+      "title": "/blob/main/skills/deployment/reference/command-reference.md",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/graphs/contributors",
-      "title": "/graphs/contributors",
-      "count": 2,
-      "uniques": 2,
-      "date": "2026-09-06"
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/managed-db-services/reference/mysql.md",
+      "title": "/blob/main/skills/managed-db-services/reference/mysql.md",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/managed-db-services/reference/valkey.md",
+      "title": "/blob/main/skills/managed-db-services/reference/valkey.md",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
     }
   ],
   "top_referrers": [
     {
       "referrer": "Google",
-      "count": 33,
-      "uniques": 14,
-      "date": "2026-09-06"
+      "count": 24,
+      "uniques": 12,
+      "date": "2026-09-13"
     },
     {
       "referrer": "github.com",
-      "count": 26,
+      "count": 12,
       "uniques": 6,
-      "date": "2026-09-06"
-    },
-    {
-      "referrer": "digitalocean.com",
-      "count": 5,
-      "uniques": 3,
-      "date": "2026-09-06"
+      "date": "2026-09-13"
     },
     {
       "referrer": "DuckDuckGo",
       "count": 2,
       "uniques": 1,
-      "date": "2026-09-06"
+      "date": "2026-09-13"
     },
     {
-      "referrer": "kagi.com",
+      "referrer": "Bing",
       "count": 1,
       "uniques": 1,
-      "date": "2026-09-06"
+      "date": "2026-09-13"
+    },
+    {
+      "referrer": "digitalocean.com",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
+    },
+    {
+      "referrer": "waves.digitalocean.com",
+      "count": 1,
+      "uniques": 1,
+      "date": "2026-09-13"
     }
   ]
 }
