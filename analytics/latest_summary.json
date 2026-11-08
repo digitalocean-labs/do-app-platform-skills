@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-01T04:20:12.955035+00:00",
+  "generated_at": "2026-11-08T04:20:15.386375+00:00",
   "summary": {
-    "total_views": 63,
-    "unique_visitors": 53,
-    "total_clones": 735,
-    "unique_cloners": 528,
+    "total_views": 87,
+    "unique_visitors": 74,
+    "total_clones": 1668,
+    "unique_cloners": 536,
     "popular_paths_count": 10,
     "referrers_count": 5
   },
@@ -12,104 +12,104 @@
     {
       "path": "/digitalocean-labs/do-app-platform-skills",
       "title": "Overview",
-      "count": 20,
-      "uniques": 16,
-      "date": "2026-11-01"
+      "count": 33,
+      "uniques": 24,
+      "date": "2026-11-08"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
-      "title": "/tree/main/skills",
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/Docs",
+      "title": "/tree/main/Docs",
       "count": 3,
       "uniques": 3,
-      "date": "2026-11-01"
+      "date": "2026-11-08"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/deployment/reference/command-reference.md",
       "title": "/blob/main/skills/deployment/reference/command-reference.md",
       "count": 2,
       "uniques": 2,
-      "date": "2026-11-01"
+      "date": "2026-11-08"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/HEAD/shared/AppSpec-Reference.md",
-      "title": "/blob/HEAD/shared/AppSpec-Reference.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-11-01"
+      "path": "/digitalocean-labs/do-app-platform-skills/commit/1e34935c0c68b87d259fe42a64cc063467d4e461",
+      "title": "/commit/1e34935c0c68b87d259fe42a64cc063467d4e461",
+      "count": 2,
+      "uniques": 2,
+      "date": "2026-11-08"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/HEAD/shared/console-sdk-patterns.md",
-      "title": "/blob/HEAD/shared/console-sdk-patterns.md",
-      "count": 1,
+      "path": "/digitalocean-labs/do-app-platform-skills/commit/2e5ad601b8b768dc86fb011cc0a2147e69670394",
+      "title": "/commit/2e5ad601b8b768dc86fb011cc0a2147e69670394",
+      "count": 2,
+      "uniques": 2,
+      "date": "2026-11-08"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills",
+      "title": "/tree/main/skills",
+      "count": 2,
+      "uniques": 2,
+      "date": "2026-11-08"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/tests",
+      "title": "/tree/main/tests",
+      "count": 2,
+      "uniques": 2,
+      "date": "2026-11-08"
+    },
+    {
+      "path": "/digitalocean-labs/do-app-platform-skills/tree/main/skills/planner",
+      "title": "/tree/main/skills/planner",
+      "count": 2,
       "uniques": 1,
-      "date": "2026-11-01"
+      "date": "2026-11-08"
     },
     {
       "path": "/digitalocean-labs/do-app-platform-skills/blob/main/CODE_OF_CONDUCT.md",
       "title": "/blob/main/CODE_OF_CONDUCT.md",
       "count": 1,
       "uniques": 1,
-      "date": "2026-11-01"
+      "date": "2026-11-08"
     },
     {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/ai-services/SKILL.md",
-      "title": "/blob/main/skills/ai-services/SKILL.md",
+      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/ai-services/README.md",
+      "title": "/blob/main/skills/ai-services/README.md",
       "count": 1,
       "uniques": 1,
-      "date": "2026-11-01"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/designer/reference/component-types.md",
-      "title": "/blob/main/skills/designer/reference/component-types.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-11-01"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/designer/reference/database-configuration.md",
-      "title": "/blob/main/skills/designer/reference/database-configuration.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-11-01"
-    },
-    {
-      "path": "/digitalocean-labs/do-app-platform-skills/blob/main/skills/designer/reference/environment-variables.md",
-      "title": "/blob/main/skills/designer/reference/environment-variables.md",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-11-01"
+      "date": "2026-11-08"
     }
   ],
   "top_referrers": [
     {
-      "referrer": "Google",
-      "count": 13,
-      "uniques": 9,
-      "date": "2026-11-01"
+      "referrer": "aocr.org",
+      "count": 17,
+      "uniques": 17,
+      "date": "2026-11-08"
     },
     {
-      "referrer": "aocr.org",
-      "count": 3,
-      "uniques": 3,
-      "date": "2026-11-01"
+      "referrer": "Google",
+      "count": 16,
+      "uniques": 13,
+      "date": "2026-11-08"
     },
     {
       "referrer": "github.com",
-      "count": 3,
-      "uniques": 3,
-      "date": "2026-11-01"
-    },
-    {
-      "referrer": "digitalocean.com",
-      "count": 1,
-      "uniques": 1,
-      "date": "2026-11-01"
+      "count": 5,
+      "uniques": 4,
+      "date": "2026-11-08"
     },
     {
       "referrer": "waves.digitalocean.com",
+      "count": 2,
+      "uniques": 1,
+      "date": "2026-11-08"
+    },
+    {
+      "referrer": "github-com.btglss.net",
       "count": 1,
       "uniques": 1,
-      "date": "2026-11-01"
+      "date": "2026-11-08"
     }
   ]
 }
